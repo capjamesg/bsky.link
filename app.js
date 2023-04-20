@@ -79,7 +79,8 @@ app.route("/").get(async (req, res) => {
                         data: data.thread.post.record,
                         author: data.thread.post.author,
                         embed: embed,
-                        embed_type: embed_type
+                        embed_type: embed_type,
+                        url: "https://bsky.link/?url=" + url
                     });
                 });
             });
