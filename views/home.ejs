@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        <title>Bluesky Post</title>
+    </head>
+    <body>
+        <main>
+            <style>
+                * {
+                    font-family: Arial, Helvetica, sans-serif;
+                    box-sizing: border-box;
+                }
+                html {
+                    padding: 10px;
+                }
+                img {
+                    border-radius: 50%;
+                }
+                .author {
+                    display: flex;
+                    align-items: center;
+                }
+                .author-name h2, .author-name p {
+                    margin: 0;
+                }
+                .author-name {
+                    margin-left: 10px;
+                }
+                blockquote {
+                    margin-left: 0;
+                    padding: 0;
+                    border-left: 5px solid #ccc;
+                    padding-left: 10px;
+                }
+                main {
+                    max-width: 500px;
+                }
+            </style>
+            <h1>Generate links for Bluesky Posts</h1>
+            <p>Generate embeddable links for Bluesky Posts.</p>
+
+            <form action="/" method="GET">
+                <input type="url" name="url" placeholder="Paste a Bluesky Post URL here" required>
+                <button type="submit">Generate</button>
+            </form>
+
+            <div id="embed"></div>
+        </main>
+        <script>
+            // on form submit, create ifreame
+            document.querySelector('form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const url = new URL("http://localhost:3008/?url=" + e.target.url.value);
+                const iframe = document.createElement('iframe');
+                iframe.src = url;
+                iframe.width = '100%';
+                iframe.height = '500px';
+                iframe.frameBorder = '0';
+                iframe.allow = 'autoplay; encrypted-media';
+                iframe.allowFullscreen = true;
+                document.querySelector('#embed').innerHTML = iframe.outerHTML;
+            });
+        </script>
+    </body>
+</html>
