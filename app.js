@@ -15,8 +15,6 @@ app.set("view engine", "ejs");
 
 var xhr = new XMLHttpRequest();
 
-console.log(config.HANDLE);
-
 xhr.open("POST", "https://bsky.social/xrpc/com.atproto.server.createSession", true);
 xhr.setRequestHeader("Content-Type", "application/json");
 xhr.send(JSON.stringify({

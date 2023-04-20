@@ -20,6 +20,26 @@
                 img {
                     border-radius: 50%;
                 }
+                h1 {
+                    color: #0060df;
+                }
+                input {
+                    padding: 0.5em;
+                    border: 1px solid #ccc;
+                    border-radius: 0.25em;
+                    font-size: 1em;
+                    width: 100%;
+                }
+                button {
+                    background: #0060df;
+                    color: #fff;
+                    border: none;
+                    cursor: pointer;
+                    padding: 10px;
+                    border-radius: 10px;
+                    margin-top: 10px;
+                    font-size: 1em;
+                }
                 .author {
                     display: flex;
                     align-items: center;
@@ -39,6 +59,14 @@
                 main {
                     max-width: 500px;
                 }
+                iframe {
+                    margin-top: 10px;
+                    border: 1px solid #ccc;
+                }
+                a {
+                    color: #0060df;
+                    text-decoration: none;
+                }
             </style>
             <h1>Generate links for Bluesky Posts</h1>
             <p>Generate embeddable links for Bluesky Posts.</p>
@@ -49,6 +77,12 @@
             </form>
 
             <div id="embed"></div>
+
+            <div id="embedcode"></div>
+
+            <footer>
+                <p>Made with ❤️ by <a href="https://jamesg.blog" target="_blank">jamesg.blog</a>. Not affiliated with Bluesky.</p>
+            </footer>
         </main>
         <script>
             // on form submit, create ifreame
@@ -58,11 +92,31 @@
                 const iframe = document.createElement('iframe');
                 iframe.src = url;
                 iframe.width = '100%';
-                iframe.height = '500px';
+                iframe.height = '200px';
                 iframe.frameBorder = '0';
                 iframe.allow = 'autoplay; encrypted-media';
                 iframe.allowFullscreen = true;
                 document.querySelector('#embed').innerHTML = iframe.outerHTML;
+
+                const h2 = document.createElement('h2');
+                h2.innerText = 'Embed';
+                document.querySelector('#embed').prepend(h2);
+
+                // show embed code
+                const embedCode = document.createElement('textarea');
+                embedCode.innerText = iframe.outerHTML;
+                embedCode.style.width = '100%';
+                embedCode.style.height = '100px';
+                embedCode.style.marginTop = '10px';
+                embedCode.style.padding = '10px';
+                embedCode.style.border = '1px solid #ccc';
+                embedCode.style.borderRadius = '5px';
+                embedCode.style.fontFamily = 'monospace';
+                document.querySelector('#embedcode').innerHTML = embedCode.outerHTML;
+
+                const embedCodeHeading = document.createElement('h2');
+                embedCodeHeading.innerText = 'Embed Code';
+                document.querySelector('#embedcode').prepend(embedCodeHeading);
             });
         </script>
     </body>
