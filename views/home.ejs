@@ -5,69 +5,20 @@
         
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         
-        <title>Bluesky Post</title>
+        <title>Embed Bluesky Post</title>
+
+        <meta name="description" content="Generate an embeddable link for a Bluesky Post." />
+        
+        <meta property="og:title" content="Embed Bluesky Post" />
+        <meta property="og:description" content="Generate an embeddable link for a Bluesky Post." />
+        <meta property="og:image" content="https://screenshot.jamesg.blog/?url=https://bsky.link" />
+
+        <link rel="icon" href="https://bsky.link/favicon.png" type="image/x-icon" />
+
+        <link rel="stylesheet" href="/styles.css">
     </head>
     <body>
         <main>
-            <style>
-                * {
-                    font-family: Arial, Helvetica, sans-serif;
-                    box-sizing: border-box;
-                }
-                html {
-                    padding: 10px;
-                }
-                img {
-                    border-radius: 50%;
-                }
-                h1 {
-                    color: #0060df;
-                }
-                input {
-                    padding: 0.5em;
-                    border: 1px solid #ccc;
-                    border-radius: 0.25em;
-                    font-size: 1em;
-                    width: 100%;
-                }
-                button {
-                    background: #0060df;
-                    color: #fff;
-                    border: none;
-                    cursor: pointer;
-                    padding: 10px;
-                    border-radius: 10px;
-                    margin-top: 10px;
-                    font-size: 1em;
-                }
-                .author {
-                    display: flex;
-                    align-items: center;
-                }
-                .author-name h2, .author-name p {
-                    margin: 0;
-                }
-                .author-name {
-                    margin-left: 10px;
-                }
-                blockquote {
-                    margin-left: 0;
-                    padding: 0;
-                    border-left: 5px solid #ccc;
-                    padding-left: 10px;
-                }
-                main {
-                    max-width: 500px;
-                }
-                iframe {
-                    margin-top: 10px;
-                    border: 1px solid #ccc;
-                }
-                a {
-                    color: #0060df;
-                    text-decoration: none;
-                }
-            </style>
             <h1>Generate links for Bluesky Posts</h1>
             <p>Generate embeddable links for Bluesky Posts.</p>
 
@@ -81,14 +32,20 @@
             <div id="embedcode"></div>
 
             <footer>
-                <p>Made with ❤️ by <a href="https://jamesg.blog" target="_blank">jamesg.blog</a>. Not affiliated with Bluesky.</p>
+                <p>Made with ❤️ and ☕️ by <a href="https://jamesg.blog" target="_blank">jamesg.blog</a>. Not affiliated with Bluesky.</p>
             </footer>
         </main>
         <script>
             // on form submit, create ifreame
             document.querySelector('form').addEventListener('submit', function(e) {
                 e.preventDefault();
-                const url = new URL("http://localhost:3008/?url=" + e.target.url.value);
+                // https://bsky.link
+                if (!e.target.url.value.match(/https:\/\/staging.bsky.app\/profile\/[a-z0-9]+\.bsky\.social\/post\/[a-z0-9]+/)) {
+                    alert('Please enter a valid Bluesky Post URL.');
+                    return;
+                }
+    
+                const url = new URL("https://bsky.link/?url=" + e.target.url.value);
                 const iframe = document.createElement('iframe');
                 iframe.src = url;
                 iframe.width = '100%';

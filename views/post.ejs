@@ -5,41 +5,21 @@
         
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         
-        <title>Bluesky Post by <% author.displayName %></title>
+        <title>Post by <% author.displayName %></title>
+
+        <meta name="description" content="<%= data.text %>" />
+        
+        <meta property="og:title" content="Post by <%= author.displayName %>" />
+        <meta property="og:description" content="<%= data.text %>" />
+        <meta property="og:image" content="https://screenshot.jamesg.blog/?url=https://bsky.link" />
+        <meta property="article:author" content="<%= author.handle %>" />
+
+        <link rel="icon" href="https://bsky.link/favicon.png" type="image/x-icon" />
+
+        <link rel="stylesheet" href="/styles.css">
     </head>
     <body>
         <main>
-            <style>
-                * {
-                    font-family: Arial, Helvetica, sans-serif;
-                    box-sizing: border-box;
-                }
-                html {
-                    padding: 10px;
-                }
-                img {
-                    border-radius: 50%;
-                }
-                .author {
-                    display: flex;
-                    align-items: center;
-                }
-                .author-name h2, .author-name p {
-                    margin: 0;
-                }
-                .author-name {
-                    margin-left: 10px;
-                }
-                blockquote {
-                    margin-left: 0;
-                    padding: 0;
-                    border-left: 5px solid #ccc;
-                    padding-left: 10px;
-                }
-                main {
-                    max-width: 500px;
-                }
-            </style>
             <div class="author">
                 <img src="<%= author.avatar %>" alt="<%= author.displayName %>'s profile picture" height="50" width="50">
                 <div class="author-name">
@@ -47,7 +27,28 @@
                     <p><%= author.handle %></p>
                 </div>
             </div>
-            <blockquote><%= data.text %></blockquote>
+            <%= data.record %>
+            <blockquote>
+                <%= data.text %>
+                <% if (embed_type == "record") { %>
+                    <div class="embed inner-embed">
+                        <div class="author">
+                            <img src="<%= embed.author.avatar %>" alt="<%= embed.author.displayName %>'s profile picture" height="50" width="50">
+                            <div class="author-name">
+                                <h2><%= embed.author.displayName %></h2>
+                                <p><%= embed.author.handle %></p>
+                            </div>
+                        </div>
+                        <blockquote>
+                            <%= embed.value.text %>
+                        </blockquote>
+                    </div>
+                <% } else if (embed_type == "images") { %>
+                    <% for (let i = 0; i < embed.length; i++) { %>
+                        <img src="<%= embed[i].fullsize %>" alt="<%= embed[i].alt %>" class="embedded-image" />
+                    <% } %>
+                <% } %>
+            </blockquote>
         </main>
     </body>
 </html>

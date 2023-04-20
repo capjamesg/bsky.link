@@ -12,6 +12,7 @@ const PORT = process.env.PORT || 3008;
 const app = express();
 
 app.set("view engine", "ejs");
+app.use(express.static("public"));
 
 var xhr = new XMLHttpRequest();
 
@@ -26,7 +27,6 @@ var token = "";
 
 xhr.onreadystatechange = function () {
     if (this.readyState == 4) {
-        console.log(this.responseText);
         token = JSON.parse(this.responseText).accessJwt;
     }
 }
@@ -37,6 +37,12 @@ app.route("/").get(async (req, res) => {
     if (!url) {
         // load home.ejs
         res.render("home");
+        return;
+    }
+
+    if (!url.match(/https:\/\/staging.bsky.app\/profile\/[a-z0-9]+\.bsky\.social\/post\/[a-z0-9]+/)) {
+        // send 400
+        res.status(400).send("Invalid URL.");
         return;
     }
 
@@ -59,9 +65,21 @@ app.route("/").get(async (req, res) => {
                 },
             }).then((response) => {
                 response.json().then((data) => {
+                    if (data.thread.post.embed && data.thread.post.embed.record) {
+                        var embed = data.thread.post.embed.record;
+                        var embed_type = "record";
+                    } else if (data.thread.post.embed && data.thread.post.embed.images) {
+                        var embed = data.thread.post.embed.images;
+                        var embed_type = "images";
+                    } else {
+                        var embed = null;
+                        var embed_type = null;
+                    }
                     res.render("post", {
                         data: data.thread.post.record,
                         author: data.thread.post.author,
+                        embed: embed,
+                        embed_type: embed_type
                     });
                 });
             });
