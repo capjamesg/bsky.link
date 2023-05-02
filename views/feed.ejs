@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        <title>Posts by <% author %></title>
+
+        <meta name="description" content="View posts written by <%= author %>" />
+        
+        <meta property="og:title" content="Posts by <%= author %>" />
+        <meta property="og:description" content="View posts written by <%= author %>" />
+        <meta property="og:image" content="https://screenshot.jamesg.blog/?url=<%= url %>" />
+        <meta property="article:author" content="<%= author %>" />
+
+        <link rel="icon" href="https://bsky.link/favicon.png" type="image/x-icon" />
+
+        <link rel="stylesheet" href="/styles.css">
+    </head>
+    <body>
+        <main>
+            <ul>
+                <% for (let i = 0; i < posts.length; i++) { %>
+                <li class="h-entry">
+                    <% if (posts[i].reason) { %>
+                        <div class="author reposted-by">
+                            <img src="<%= posts[i].reason.by.avatar %>" alt="<%= posts[i].post.author.displayName %>'s profile picture" height="50" width="50" class="u-photo">
+                            <div class="author-name">
+                                <p>Reposted by <a href="https://staging.bsky.app/profile/<%= posts[i].reason.by.handle %>" class="u-url"><%= posts[i].reason.by.handle %></a></p>
+                            </div>
+                        </div>
+                    <% } %>
+                    <div class="author h-card">
+                        <img src="<%= posts[i].post.author.avatar %>" alt="<%= posts[i].post.author.displayName %>'s profile picture" height="50" width="50" class="u-photo">
+                        <div class="author-name">
+                            <h2><%= posts[i].post.author.displayName %></h2>
+                            <p class="p-nickname"><a href="https://staging.bsky.app/profile/<%= posts[i].post.author.handle %>" class="u-url"><%= posts[i].post.author.handle %></a></p>
+                        </div>
+                    </div>
+                    <blockquote>
+                        <span class="e-content"><%= posts[i].post.record.text %></span>
+                    </blockquote>
+                    <a href="<%= post_url %>" class="permalink"><time class="dt-published datelink" datetime="<%= posts[i].post.record.createdAt %>"><%= posts[i].post.record.createdAt %></time></a>
+                    <div class="post-actions">
+                        <a href="<%= post_url %>">❤️ <%= posts[i].post.replyCount %> likes</a>
+                        <a href="<%= post_url %>">🔄 <%= posts[i].post.repostCount %> reposts</a>
+                        <a href="<%= post_url %>">💬 <%= posts[i].post.replyCount %> replies</a>
+                    </div>
+                </li>
+                <% } %>
+            </ul>
+        </main>
+    </body>
+</html>

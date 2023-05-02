@@ -27,8 +27,8 @@
             <div class="author h-card">
                 <img src="<%= author.avatar %>" alt="<%= author.displayName %>'s profile picture" height="50" width="50" class="u-photo">
                 <div class="author-name">
-                    <h2 class="p-name"><%= author.displayName %></h2>
-                    <p class="p-nickname"><%= author.handle %></p>
+                    <h2><%= author.displayName %></h2>
+                    <p class="p-nickname"><a href="https://staging.bsky.app/profile/<%= author.handle %>" class="u-url"><%= author.handle %></a></p>
                 </div>
             </div>
             <%= data.record %>
@@ -39,7 +39,7 @@
                         <div class="author">
                             <img src="<%= embed.author.avatar %>" alt="<%= embed.author.displayName %>'s profile picture" height="50" width="50">
                             <div class="author-name">
-                                <h2><%= embed.author.displayName %></h2>
+                                <h2><a href="https://staging.bsky.app/profile/<%= embed.author.handle %>" class="u-url"><%= embed.author.displayName %></a></h2>
                                 <p><%= embed.author.handle %></p>
                             </div>
                         </div>

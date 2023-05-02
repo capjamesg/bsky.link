@@ -107,6 +107,40 @@ app.route("/").get(async (req, res) => {
     });
 });
 
+app.route("/feed").get(async (req, res) => {
+    var user = req.query.user;
+
+    if (!user) {
+        res.render("error", {
+            error: "Invalid user"
+        });
+        return;
+    }
+
+    fetch("https://bsky.social/xrpc/app.bsky.feed.getAuthorFeed?actor=" + user, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + token
+        }
+    }).then((response) => {
+        response.json().then((data) => {
+            // if reason, print to console
+            for (var i = 0; i < data.feed.length; i++) {
+                if (data.feed[i].reason) {
+                    console.log(data.feed[i].reason);
+                }
+            }
+            res.render("feed", {
+                author: user,
+                posts: data.feed,
+                url: "https://bsky.link/feed?user=" + user,
+                post_url: "https://staging.bsky.social/profile/" + user
+            });
+        });
+    });
+});
+
 app.listen(PORT, () => {
     console.log(`Server started on port ${PORT}`);
 });
