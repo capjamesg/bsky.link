@@ -40,11 +40,13 @@ app.route("/").get(async (req, res) => {
         return;
     }
 
-//     if (!url.match(/https:\/\/staging.bsky.app\/profile\/[a-z0-9]+\.bsky\.social\/post\/[a-z0-9]+/)) {
-//         // send 400
-//         res.status(400).send("Invalid URL.");
-//         return;
-//     }
+//  // url must start with staging.bsky.app
+    if (!url.startsWith("https://staging.bsky.app") && !url.startsWith("http://staging.bsky.app")) {
+        res.render("error", {
+            error: "Invalid URL"
+        });
+        return;
+    }
 
     var handle = new URL(url).pathname.split("/")[2];
     var post_id = new URL(url).pathname.split("/")[4];
@@ -75,12 +77,28 @@ app.route("/").get(async (req, res) => {
                         var embed = null;
                         var embed_type = null;
                     }
+                    var createdAt = new Date(data.thread.post.record.createdAt);
+
+                    var readableDate = createdAt.toLocaleString("en-US", {
+                        month: "long",
+                        day: "numeric",
+                        year: "numeric",
+                        hour: "numeric",
+                        minute: "numeric",
+                        second: "numeric",
+                        hour12: true,
+                    }).replace(",", "");
+
                     res.render("post", {
                         data: data.thread.post.record,
                         author: data.thread.post.author,
                         embed: embed,
                         embed_type: embed_type,
-                        url: "https://bsky.link/?url=" + url
+                        url: "https://bsky.link/?url=" + url,
+                        reply_count: data.thread.post.replyCount,
+                        like_count: data.thread.post.likeCount,
+                        repost_count: data.thread.post.repostCount,
+                        created_at: readableDate
                     });
                 });
             });

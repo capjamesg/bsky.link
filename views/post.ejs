@@ -16,6 +16,10 @@
 
         <link rel="icon" href="https://bsky.link/favicon.png" type="image/x-icon" />
 
+        <% if (embed_type == "images") { %>
+            <meta property="og:image" content="<%= embed[0].fullsize %>" />
+        <% } %>
+
         <link rel="stylesheet" href="/styles.css">
     </head>
     <body>
@@ -49,6 +53,12 @@
                     <% } %>
                 <% } %>
             </blockquote>
+            <a href="<%= url %>" class="permalink"><time class="dt-published datelink" datetime="<%= created_at %>"><%= created_at %></time></a>
+            <div class="post-actions">
+                <a href="<%= url %>">❤️ <%= like_count %> likes</a>
+                <a href="<%= url %>">🔄 <%= repost_count %> reposts</a>
+                <a href="<%= url %>">💬 <%= reply_count %> replies</a>
+            </div>
         </main>
     </body>
 </html>
