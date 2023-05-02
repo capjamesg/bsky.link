@@ -95,6 +95,7 @@ app.route("/").get(async (req, res) => {
                         embed: embed,
                         embed_type: embed_type,
                         url: "https://bsky.link/?url=" + url,
+                        post_url: url,
                         reply_count: data.thread.post.replyCount,
                         like_count: data.thread.post.likeCount,
                         repost_count: data.thread.post.repostCount,
