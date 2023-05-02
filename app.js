@@ -40,11 +40,11 @@ app.route("/").get(async (req, res) => {
         return;
     }
 
-    if (!url.match(/https:\/\/staging.bsky.app\/profile\/[a-z0-9]+\.bsky\.social\/post\/[a-z0-9]+/)) {
-        // send 400
-        res.status(400).send("Invalid URL.");
-        return;
-    }
+//     if (!url.match(/https:\/\/staging.bsky.app\/profile\/[a-z0-9]+\.bsky\.social\/post\/[a-z0-9]+/)) {
+//         // send 400
+//         res.status(400).send("Invalid URL.");
+//         return;
+//     }
 
     var handle = new URL(url).pathname.split("/")[2];
     var post_id = new URL(url).pathname.split("/")[4];
