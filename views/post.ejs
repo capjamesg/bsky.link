@@ -19,17 +19,17 @@
         <link rel="stylesheet" href="/styles.css">
     </head>
     <body>
-        <main>
-            <div class="author">
-                <img src="<%= author.avatar %>" alt="<%= author.displayName %>'s profile picture" height="50" width="50">
+        <main class="h-entry">
+            <div class="author h-card">
+                <img src="<%= author.avatar %>" alt="<%= author.displayName %>'s profile picture" height="50" width="50" class="u-photo">
                 <div class="author-name">
-                    <h2><%= author.displayName %></h2>
-                    <p><%= author.handle %></p>
+                    <h2 class="p-name"><%= author.displayName %></h2>
+                    <p class="p-nickname"><%= author.handle %></p>
                 </div>
             </div>
             <%= data.record %>
             <blockquote>
-                <%= data.text %>
+                <span class="e-content"><%= data.text %></span>
                 <% if (embed_type == "record") { %>
                     <div class="embed inner-embed">
                         <div class="author">
