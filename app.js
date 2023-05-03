@@ -67,16 +67,23 @@ app.route("/").get(async (req, res) => {
                 },
             }).then((response) => {
                 response.json().then((data) => {
-                    if (data.thread.post.embed && data.thread.post.embed.record) {
-                        var embed = data.thread.post.embed.record;
-                        var embed_type = "record";
-                    } else if (data.thread.post.embed && data.thread.post.embed.images) {
-                        var embed = data.thread.post.embed.images;
-                        var embed_type = "images";
+                    var embed = null;
+                    var embed_type = null;
+
+                    if (data && data.thread && data.thread.post)
+                        if (data.thread.post.embed && data.thread.post.embed.record) {
+                            var embed = data.thread.post.embed.record;
+                            var embed_type = "record";
+                        } else if (data.thread.post.embed && data.thread.post.embed.images) {
+                            var embed = data.thread.post.embed.images;
+                            var embed_type = "images";
                     } else {
-                        var embed = null;
-                        var embed_type = null;
+                        res.render("error", {
+                            error: "Invalid URL"
+                        });
+                        return;
                     }
+
                     var createdAt = new Date(data.thread.post.record.createdAt);
 
                     var readableDate = createdAt.toLocaleString("en-US", {
