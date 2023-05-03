@@ -8,6 +8,7 @@ var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 
 const PORT = process.env.PORT || 3008;
+const VALID_URLS = ["bsky.app", "staging.bsky.app"];
 
 const app = express();
 
@@ -40,16 +41,19 @@ app.route("/").get(async (req, res) => {
         return;
     }
 
-//  // url must start with staging.bsky.app
-    if (!url.startsWith("https://staging.bsky.app") && !url.startsWith("http://staging.bsky.app")) {
+    var parsed_url = new URL(url);
+
+    var domain = parsed_url.hostname;
+
+    if (!VALID_URLS.includes(domain)) {
         res.render("error", {
             error: "Invalid URL"
         });
         return;
     }
 
-    var handle = new URL(url).pathname.split("/")[2];
-    var post_id = new URL(url).pathname.split("/")[4];
+    var handle = parsed_url.pathname.split("/")[2];
+    var post_id = parsed_url.pathname.split("/")[4];
 
     fetch("https://bsky.social/xrpc/com.atproto.identity.resolveHandle?handle=" + handle, {
         method: "GET",
