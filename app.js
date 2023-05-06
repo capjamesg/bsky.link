@@ -89,6 +89,7 @@ app.route("/").get(async (req, res) => {
     }
 
     var show_thread = req.query.show_thread == "t";
+    var hide_parent = req.query.hide_parent == "t";
 
     var handle = parsed_url.pathname.split("/")[2];
     var post_id = parsed_url.pathname.split("/")[4];
@@ -143,6 +144,14 @@ app.route("/").get(async (req, res) => {
 
                     var all_replies = flattenReplies(data.thread.replies, author_handle);
 
+                    var parent;
+
+                    if (hide_parent) {
+                        parent = [];
+                    } else {
+                        parent = data.thread.parent ? data.thread.parent : null;
+                    }
+
                     res.render("post", {
                         data: data.thread.post.record,
                         author: data.thread.post.author,
@@ -155,7 +164,7 @@ app.route("/").get(async (req, res) => {
                         repost_count: data.thread.post.repostCount,
                         created_at: readableDate,
                         replies: show_thread ? all_replies : [],
-                        parent: data.thread.parent ? data.thread.parent : null,
+                        parent: parent
                     });
                 });
             });
