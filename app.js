@@ -65,7 +65,14 @@ app.route("/").get(async (req, res) => {
         return;
     }
 
-    var parsed_url = new URL(url);
+    try {
+        var parsed_url = new URL(url);
+    } catch (e) {
+        res.render("error", {
+            error: "Invalid URL"
+        });
+        return;
+    }
 
     var domain = parsed_url.hostname;
 
