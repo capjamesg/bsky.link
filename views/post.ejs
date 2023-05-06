@@ -31,7 +31,6 @@
                     <p class="p-nickname"><a href="https://staging.bsky.app/profile/<%= author.handle %>" class="u-url"><%= author.handle %></a></p>
                 </div>
             </div>
-            <%= data.record %>
             <blockquote>
                 <span class="e-content"><%= data.text %></span>
                 <% if (embed_type == "record") { %>
@@ -40,7 +39,7 @@
                             <img src="<%= embed.author.avatar %>" alt="<%= embed.author.displayName %>'s profile picture" height="50" width="50">
                             <div class="author-name">
                                 <h2><%= embed.author.displayName %></h2>
-                                <p class="p-nickname"><a href="https://staging.bsky.app/profile/<%= embed.author.handle %>" class="u-url p-name"></a><%= embed.author.handle %></a></p>
+                                <p class="p-nickname"><a href="https://staging.bsky.app/profile/<%= embed.author.handle %>" class="u-url p-name"><%= embed.author.handle %></a></p>
                             </div>
                         </div>
                         <blockquote>
@@ -59,6 +58,25 @@
                 <a href="<%= post_url %>">🔄 <%= repost_count %> reposts</a>
                 <a href="<%= post_url %>">💬 <%= reply_count %> replies</a>
             </div>
+            <% for (let r = 0; r < replies.length; r++) { %>
+                <br />
+                <div class="author p-author h-card">
+                    <img src="<%= replies[r].post.author.avatar %>" alt="<%= replies[r].post.author.displayName %>'s profile picture" height="50" width="50" class="u-photo">
+                    <div class="author-name">
+                        <h2 class="p-name"><%= replies[r].post.author.displayName %></h2>
+                        <p class="p-nickname"><a href="https://staging.bsky.app/profile/<%= replies[r].post.author.handle %>" class="u-url"><%= replies[r].post.author.handle %></a></p>
+                    </div>
+                </div>
+                <blockquote>
+                    <span class="e-content"><%= replies[r].post.record.text %></span>
+                </blockquote>
+                <time class="dt-published datelink" datetime="<%= replies[r].post.record.createdAt %>"><%= replies[r].post.record.createdAt %></time>
+                <div class="post-actions">
+                    ❤️ <%= replies[r].post.likeCount %> likes
+                    🔄 <%= replies[r].post.repostCount %> reposts
+                    💬 <%= replies[r].post.replyCount %> replies
+                </div>
+            <% } %>
         </main>
     </body>
 </html>

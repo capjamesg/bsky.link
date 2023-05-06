@@ -32,6 +32,30 @@ xhr.onreadystatechange = function () {
     }
 }
 
+function flattenReplies (replies) {
+    // replies are nested objects of .replies, so we need to flatten them
+    var all_replies = [];
+
+    if (!replies || replies.length == 0) {
+        return all_replies;
+    }
+
+    for (var i = 0; i < replies.length; i++) {
+        var reply = replies[i];
+
+        all_replies.push(reply);
+
+        if (reply.replies && reply.replies.length > 0) {
+            all_replies = all_replies.concat(flattenReplies(reply.replies));
+        }
+    }
+
+    return all_replies;
+}
+
+function getImage (embed) {
+}
+
 app.route("/").get(async (req, res) => {
     var url = req.query.url;
 
@@ -46,12 +70,13 @@ app.route("/").get(async (req, res) => {
     var domain = parsed_url.hostname;
 
     if (!VALID_URLS.includes(domain)) {
-        console.log("Invalid URL");
         res.render("error", {
             error: "Invalid URL"
         });
         return;
     }
+
+    var show_thread = req.query.show_thread == "t";
 
     var handle = parsed_url.pathname.split("/")[2];
     var post_id = parsed_url.pathname.split("/")[4];
@@ -64,7 +89,7 @@ app.route("/").get(async (req, res) => {
         }
     }).then((response) => {
         response.json().then((did) => {
-            fetch(`https://bsky.social/xrpc/app.bsky.feed.getPostThread?uri=at://${did.did}/app.bsky.feed.post/${post_id}&depth=0`, {
+            fetch(`https://bsky.social/xrpc/app.bsky.feed.getPostThread?uri=at://${did.did}/app.bsky.feed.post/${post_id}`, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
@@ -74,8 +99,6 @@ app.route("/").get(async (req, res) => {
                 response.json().then((data) => {
                     var embed = null;
                     var embed_type = null;
-
-                    console.log(data.thread.post);
 
                     if (data && data.thread && data.thread.post) {
                         if (data.thread.post.embed && data.thread.post.embed.record) {
@@ -104,6 +127,10 @@ app.route("/").get(async (req, res) => {
                         hour12: true,
                     }).replace(",", "");
 
+                    var all_replies = flattenReplies(data.thread.replies);
+
+                    console.log(all_replies);
+
                     res.render("post", {
                         data: data.thread.post.record,
                         author: data.thread.post.author,
@@ -114,7 +141,8 @@ app.route("/").get(async (req, res) => {
                         reply_count: data.thread.post.replyCount,
                         like_count: data.thread.post.likeCount,
                         repost_count: data.thread.post.repostCount,
-                        created_at: readableDate
+                        created_at: readableDate,
+                        replies: show_thread ? all_replies : [],
                     });
                 });
             });
@@ -140,12 +168,43 @@ app.route("/feed").get(async (req, res) => {
         }
     }).then((response) => {
         response.json().then((data) => {
-            // if reason, print to console
-            for (var i = 0; i < data.feed.length; i++) {
-                if (data.feed[i].reason) {
-                    console.log(data.feed[i].reason);
+            var posts = data.feed;
+
+            for (var i = 0; i < posts.length; i++) {
+                var post = posts[i];
+
+                post.embed = null;
+                post.embed_type = null;
+
+                if (post.embed && post.embed.record) {
+                    var embed = post.embed.record;
+                    var embed_type = "record";
+                } else if (post.embed && post.embed.images) {
+                    var embed = post.embed.images;
+                    var embed_type = "images";
                 }
+
+                post.embed = embed;
+                post.embed_type = embed_type;
+
+                console.log(post);
+
+                var createdAt = new Date(post.post.record.createdAt);
+
+                var readableDate = createdAt.toLocaleString("en-US", {
+                    month: "long",
+                    day: "numeric",
+                    year: "numeric",
+                    hour: "numeric",
+                    minute: "numeric",
+                    second: "numeric",
+                    hour12: true,
+                }).replace(",", "");
+
+                post.post.record.createdAt = readableDate;
             }
+
+            // retrieve image for each post
             res.render("feed", {
                 author: user,
                 posts: data.feed,
