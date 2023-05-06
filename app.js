@@ -32,9 +32,13 @@ xhr.onreadystatechange = function () {
     }
 }
 
-function flattenReplies (replies, author_handle) {
+function flattenReplies (replies, author_handle, iteration = 0) {
     // replies are nested objects of .replies, so we need to flatten them
     var all_replies = [];
+
+    if (iteration > 20) {
+        return all_replies;
+    }
 
     if (!replies || replies.length == 0) {
         return all_replies;
@@ -50,7 +54,7 @@ function flattenReplies (replies, author_handle) {
         all_replies.push(reply);
 
         if (reply.replies && reply.replies.length > 0) {
-            all_replies = all_replies.concat(flattenReplies(reply.replies, author_handle));
+            all_replies = all_replies.concat(flattenReplies(reply.replies, author_handle, iteration + 1));
         }
     }
 
@@ -138,8 +142,6 @@ app.route("/").get(async (req, res) => {
                     var author_handle = data.thread.post.author.handle;
 
                     var all_replies = flattenReplies(data.thread.replies, author_handle);
-
-                    console.log(data.thread.parent.post.replyCount)
 
                     res.render("post", {
                         data: data.thread.post.record,
