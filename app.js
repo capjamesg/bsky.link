@@ -32,7 +32,7 @@ xhr.onreadystatechange = function () {
     }
 }
 
-function flattenReplies (replies) {
+function flattenReplies (replies, author_handle) {
     // replies are nested objects of .replies, so we need to flatten them
     var all_replies = [];
 
@@ -43,17 +43,18 @@ function flattenReplies (replies) {
     for (var i = 0; i < replies.length; i++) {
         var reply = replies[i];
 
+        if (reply.post.author.handle != author_handle) {
+            continue;
+        }
+
         all_replies.push(reply);
 
         if (reply.replies && reply.replies.length > 0) {
-            all_replies = all_replies.concat(flattenReplies(reply.replies));
+            all_replies = all_replies.concat(flattenReplies(reply.replies, author_handle));
         }
     }
 
     return all_replies;
-}
-
-function getImage (embed) {
 }
 
 app.route("/").get(async (req, res) => {
@@ -134,9 +135,9 @@ app.route("/").get(async (req, res) => {
                         hour12: true,
                     }).replace(",", "");
 
-                    var all_replies = flattenReplies(data.thread.replies);
+                    var author_handle = data.thread.post.author.handle;
 
-                    console.log(all_replies);
+                    var all_replies = flattenReplies(data.thread.replies, author_handle);
 
                     res.render("post", {
                         data: data.thread.post.record,
