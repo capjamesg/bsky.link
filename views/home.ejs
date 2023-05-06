@@ -31,6 +31,8 @@
                 <button type="submit">Generate</button>
             </form>
 
+            <div id="embed_url"></div>
+
             <div id="embed"></div>
 
             <div id="embedcode"></div>
@@ -98,6 +100,15 @@
                 const embedCodeHeading = document.createElement('h2');
                 embedCodeHeading.innerText = 'Embed Code';
                 document.querySelector('#embedcode').prepend(embedCodeHeading);
+
+                // show embed url
+                const embedH2 = document.createElement('h2');
+                embedH2.innerText = 'Embed URL';
+                document.querySelector('#embed_url').innerHTML = embedH2.outerHTML;
+                const embedUrl = document.createElement('a');
+                embedUrl.href = url;
+                embedUrl.innerText = url;
+                document.querySelector('#embed_url').append(embedUrl);
             });
         </script>
     </body>

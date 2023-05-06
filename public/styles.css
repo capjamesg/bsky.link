@@ -46,7 +46,7 @@ a {
     margin-top: 25px;
 }
 
-input[type="url"] {
+input[type="url"], textarea {
     padding: 0.5em;
     border: 1px solid #ccc;
     border-radius: 0.25em;
