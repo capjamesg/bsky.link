@@ -65,7 +65,7 @@
                 e.preventDefault();
 
                 if (e.target.elements.show_thread.value == 't') {
-                    var url = 'https://bsky.link/?url=' + e.target.elements.url.value + '&show_thread=t';
+                    var url = 'https://bsky.link/?show_thread=t&url=' + e.target.elements.url.value;
                 } else {
                     var url = 'https://bsky.link/?url=' + e.target.elements.url.value;
                 }
