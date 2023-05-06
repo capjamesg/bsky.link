@@ -94,3 +94,6 @@ pre {
 code {
     background: #eee;
 }
+.indent {
+    margin-left: 20px;
+}

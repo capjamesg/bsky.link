@@ -139,6 +139,8 @@ app.route("/").get(async (req, res) => {
 
                     var all_replies = flattenReplies(data.thread.replies, author_handle);
 
+                    console.log(data.thread.parent.post.replyCount)
+
                     res.render("post", {
                         data: data.thread.post.record,
                         author: data.thread.post.author,
@@ -151,6 +153,7 @@ app.route("/").get(async (req, res) => {
                         repost_count: data.thread.post.repostCount,
                         created_at: readableDate,
                         replies: show_thread ? all_replies : [],
+                        parent: data.thread.parent ? data.thread.parent : null,
                     });
                 });
             });
