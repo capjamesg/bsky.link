@@ -46,6 +46,7 @@ app.route("/").get(async (req, res) => {
     var domain = parsed_url.hostname;
 
     if (!VALID_URLS.includes(domain)) {
+        console.log("Invalid URL");
         res.render("error", {
             error: "Invalid URL"
         });
@@ -74,13 +75,16 @@ app.route("/").get(async (req, res) => {
                     var embed = null;
                     var embed_type = null;
 
-                    if (data && data.thread && data.thread.post)
+                    console.log(data.thread.post);
+
+                    if (data && data.thread && data.thread.post) {
                         if (data.thread.post.embed && data.thread.post.embed.record) {
                             var embed = data.thread.post.embed.record;
                             var embed_type = "record";
                         } else if (data.thread.post.embed && data.thread.post.embed.images) {
                             var embed = data.thread.post.embed.images;
                             var embed_type = "images";
+                        }
                     } else {
                         res.render("error", {
                             error: "Invalid URL"
@@ -152,6 +156,7 @@ app.route("/feed").get(async (req, res) => {
     });
 });
 
+// run in production mode
 app.listen(PORT, () => {
-    console.log(`Server started on port ${PORT}`);
+    console.log("Server started on port " + PORT);
 });
