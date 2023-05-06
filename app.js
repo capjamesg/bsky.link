@@ -1,5 +1,6 @@
 const express = require("express");
 const ejs = require("ejs");
+const { LRUCache } = require("lru-cache");
 
 var config = require("./config.js");
 
@@ -14,6 +15,11 @@ const app = express();
 
 app.set("view engine", "ejs");
 app.use(express.static("public"));
+app.use((err, req, res, next) => {
+    res.status(500).render("error", {
+        error: "There was an error loading this page."
+    });
+});
 
 var xhr = new XMLHttpRequest();
 
@@ -61,6 +67,27 @@ function flattenReplies (replies, author_handle, iteration = 0) {
     return all_replies;
 }
 
+const options = {
+    max: 500,
+
+    // for use with tracking overall storage size
+    maxSize: 5000,
+    sizeCalculation: (value, key) => {
+        return 1
+    },
+
+    // how long to live in ms
+    ttl: 1000 * 60 * 5,
+
+    // return stale items before removing from cache?
+    allowStale: false,
+
+    updateAgeOnGet: false,
+    updateAgeOnHas: false,
+}
+
+const cache = new LRUCache(options);
+
 app.route("/").get(async (req, res) => {
     var url = req.query.url;
 
@@ -93,6 +120,19 @@ app.route("/").get(async (req, res) => {
 
     var handle = parsed_url.pathname.split("/")[2];
     var post_id = parsed_url.pathname.split("/")[4];
+
+    if (!handle || !post_id) {
+        res.render("error", {
+            error: "Invalid URL"
+        });
+        return;
+    }
+
+    if (cache.has(url)) {
+        var data = cache.get(url);
+        res.render("post", data);
+        return;
+    }
 
     fetch("https://bsky.social/xrpc/com.atproto.identity.resolveHandle?handle=" + handle, {
         method: "GET",
@@ -152,7 +192,7 @@ app.route("/").get(async (req, res) => {
                         parent = data.thread.parent ? data.thread.parent : null;
                     }
 
-                    res.render("post", {
+                    var response_data = {
                         data: data.thread.post.record,
                         author: data.thread.post.author,
                         embed: embed,
@@ -165,7 +205,11 @@ app.route("/").get(async (req, res) => {
                         created_at: readableDate,
                         replies: show_thread ? all_replies : [],
                         parent: parent
-                    });
+                    };
+
+                    cache.set(url, response_data);
+
+                    res.render("post", response_data);
                 });
             });
         });
@@ -191,6 +235,14 @@ app.route("/feed").get(async (req, res) => {
     }).then((response) => {
         response.json().then((data) => {
             var posts = data.feed;
+
+            // if no posts, error out
+            if (!posts || posts.length == 0) {
+                res.render("error", {
+                    error: "No posts found"
+                });
+                return;
+            }
 
             for (var i = 0; i < posts.length; i++) {
                 var post = posts[i].post;
