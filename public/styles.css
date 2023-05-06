@@ -97,3 +97,20 @@ code {
 .indent {
     margin-left: 20px;
 }
+.external-embed {
+    margin-top: 25px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+}
+.external-embed img {
+    margin-top: 0;
+    border-bottom-left-radius: 0%;
+    border-bottom-right-radius: 0%;
+}
+.external-embed .text-card {
+    padding: 10px;
+}
+.external-embed .text-card .title {
+    font-size: 1.2em;
+    margin-top: 0;
+}

@@ -160,6 +160,9 @@ app.route("/").get(async (req, res) => {
                         } else if (data.thread.post.embed && data.thread.post.embed.images) {
                             var embed = data.thread.post.embed.images;
                             var embed_type = "images";
+                        } else if (data.thread.post.embed && data.thread.post.embed.external) {
+                            var embed = data.thread.post.embed.external;
+                            var embed_type = "external";
                         }
                     } else {
                         res.render("error", {

@@ -72,6 +72,14 @@
                         <% for (let i = 0; i < embed.length; i++) { %>
                             <img src="<%= embed[i].fullsize %>" alt="<%= embed[i].alt %>" class="embedded-image u-image" />
                         <% } %>
+                    <% } else if (embed_type == "external") { %>
+                        <div class="external-embed">
+                            <img src="<%= embed.thumb %>" alt="<%= embed.title %>" class="embedded-image u-image" />
+                            <div class="text-card">
+                                <p class="title"><a href="<%= embed.url %>"><%= embed.title %></a></p>
+                                <p><%= embed.description %></p>
+                            </div>
+                        </div>
                     <% } %>
                 </blockquote>
                 <a href="<%= post_url %>" class="permalink u-url u-uid"><time class="dt-published datelink" datetime="<%= created_at %>"><%= created_at %></time></a>
