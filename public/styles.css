@@ -4,6 +4,7 @@
 }
 html {
     padding: 10px;
+    border-top: 5px solid #0060df;
 }
 img {
     border-radius: 50%;
@@ -113,4 +114,9 @@ code {
 .external-embed .text-card .title {
     font-size: 1.2em;
     margin-top: 0;
+}
+@media screen and (max-width: 500px) {
+    input[type="url"], textarea, input[type="submit"] {
+        width: 100%;
+    }
 }

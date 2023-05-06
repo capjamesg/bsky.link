@@ -1,0 +1,19 @@
+{
+    "short_name": "bsky.link",
+    "name": "bsky.link",
+    "icons": [
+        {
+        "src": "/favicon.png",
+        "type": "image/png",
+        "sizes": "512x512 120x120 152x152 167x167 180x180 192x192 384x384",
+        "purpose": "any maskable"
+        }
+    ],
+    "id": "/?source=pwa",
+    "start_url": "/?source=pwa",
+    "background_color": "#fff",
+    "display": "standalone",
+    "scope": "/",
+    "theme_color": "#0060df",
+    "description": "Create shareable links for Bluesky posts."
+}
