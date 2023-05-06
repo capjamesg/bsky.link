@@ -171,10 +171,7 @@ app.route("/feed").get(async (req, res) => {
             var posts = data.feed;
 
             for (var i = 0; i < posts.length; i++) {
-                var post = posts[i];
-
-                post.embed = null;
-                post.embed_type = null;
+                var post = posts[i].post;
 
                 if (post.embed && post.embed.record) {
                     var embed = post.embed.record;
@@ -182,14 +179,15 @@ app.route("/feed").get(async (req, res) => {
                 } else if (post.embed && post.embed.images) {
                     var embed = post.embed.images;
                     var embed_type = "images";
+                } else {
+                    var embed = [];
+                    var embed_type = null;
                 }
 
                 post.embed = embed;
                 post.embed_type = embed_type;
 
-                console.log(post);
-
-                var createdAt = new Date(post.post.record.createdAt);
+                var createdAt = new Date(post.record.createdAt);
 
                 var readableDate = createdAt.toLocaleString("en-US", {
                     month: "long",
@@ -201,7 +199,7 @@ app.route("/feed").get(async (req, res) => {
                     hour12: true,
                 }).replace(",", "");
 
-                post.post.record.createdAt = readableDate;
+                post.record.createdAt = readableDate;
             }
 
             // retrieve image for each post
