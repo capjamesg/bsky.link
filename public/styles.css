@@ -46,12 +46,15 @@ a {
     margin-top: 25px;
 }
 
-input {
+input[type="url"] {
     padding: 0.5em;
     border: 1px solid #ccc;
     border-radius: 0.25em;
     font-size: 1em;
     width: 100%;
+}
+input[type="radio"] {
+    margin-right: 5px;
 }
 button {
     background: #0060df;
@@ -81,4 +84,13 @@ hr {
     border: 0;
     border-top: 1px solid #ccc;
     margin: 25px 0;
+}
+pre {
+    background: #eee;
+    padding: 10px;
+    border-radius: 10px;
+    overflow-x: scroll;
+}
+code {
+    background: #eee;
 }

@@ -201,8 +201,7 @@ app.route("/feed").get(async (req, res) => {
 
                 post.record.createdAt = readableDate;
             }
-
-            // retrieve image for each post
+            
             res.render("feed", {
                 author: user,
                 posts: data.feed,

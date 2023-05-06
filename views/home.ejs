@@ -24,13 +24,26 @@
             <p>Generate embeddable links for Bluesky Posts.</p>
 
             <form action="/" method="GET">
-                <input type="url" name="url" placeholder="Paste a Bluesky Post URL here" required>
+                <input type="url" name="url" placeholder="Paste a Bluesky Post URL here" required><br><br>
+                <label for="show_thread">Show thread?</label>
+                <input type="radio" name="show_thread" value="t" id="show_thread" checked>
+                <br><br>
                 <button type="submit">Generate</button>
             </form>
 
             <div id="embed"></div>
 
             <div id="embedcode"></div>
+
+            <h2>How To Create Links</h2>
+
+            <p>You can create links to share using the following syntax:</p>
+
+            <pre><code>https://bsky.link/?url=https://staging.bsky.app/profile/&lt;handle&gt;.bsky.social/post/&lt;post_id&gt;</code></pre>
+
+            <p>Where <code>&lt;handle&gt;</code> is the handle of the author of the post, and <code>&lt;post_id&gt;</code> is the ID of the post.</p>
+
+            <p>Specify the <code>show_thread</code> parameter to show the thread of replies to the post. Set it to <code>t</code> to show all the posts a user has added to a thread.</p>
 
             <footer>
                 <p>Made with ❤️ and ☕️ by <a href="https://jamesg.blog" target="_blank">jamesg.blog</a>. <a href="https://github.com/capjamesg/bsky-link-preview">View source</a>. Not affiliated with Bluesky.</p>
@@ -40,13 +53,15 @@
             // on form submit, create ifreame
             document.querySelector('form').addEventListener('submit', function(e) {
                 e.preventDefault();
-                // https://bsky.link
-                if (!e.target.url.value.match(/https:\/\/staging.bsky.app\/profile\/[a-z0-9]+\.bsky\.social\/post\/[a-z0-9]+/)) {
-                    alert('Please enter a valid Bluesky Post URL.');
-                    return;
+
+                if (e.target.elements.show_thread.value == 't') {
+                    var url = 'https://bsky.link/?url=' + e.target.elements.url.value + '&show_thread=t';
+                } else {
+                    var url = 'https://bsky.link/?url=' + e.target.elements.url.value;
                 }
-    
-                const url = new URL("https://bsky.link/?url=" + e.target.url.value);
+
+                var url = new URL(url);
+
                 const iframe = document.createElement('iframe');
                 iframe.src = url;
                 iframe.width = '100%';
