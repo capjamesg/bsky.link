@@ -73,7 +73,7 @@
                             <% } %>
                         <% } %>
                     </blockquote>
-                    <a href="<%= post_url %>" class="permalink"><time class="dt-published datelink" datetime="<%= posts[i].post.record.createdAt %>"><%= posts[i].post.record.createdAt %></time></a>
+                    <a href="<%= post_url %>" class="permalink" class="u-url u-uid <% if (posts[i].reason) { %>u-repost-of<% } %>"><time class="dt-published datelink" datetime="<%= posts[i].post.record.createdAt %>"><%= posts[i].post.record.createdAt %></time></a>
                     <div class="post-actions">
                         <a href="<%= post_url %>">❤️ <%= posts[i].post.replyCount %> likes</a>
                         <a href="<%= post_url %>">🔄 <%= posts[i].post.repostCount %> reposts</a>
