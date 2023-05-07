@@ -46,15 +46,23 @@
                     </div>
                     <blockquote>
                         <span class="e-content"><%= posts[i].post.record.text %></span>
-                        <% if (posts[i].post.embed_type == "record") { %>
+                        <% if (posts[i].post.embed_type == "record" && posts[i].post.embed.value) { %>
                             <div class="embed inner-embed">
+                                <% if (posts[i].post.embed.author) { %>
                                 <div class="author p-author h-card">
-                                    <img src="<%= posts[i].post.embed.author.avatar %>" alt="<%= posts[i].post.embed.author.displayName %>'s profile picture" height="50" width="50">
+                                    <% if (posts[i].post.embed.author.avatar) { %>
+                                        <img src="<%= posts[i].post.embed.author.avatar %>" alt="<%= posts[i].post.embed.author.displayName %>'s profile picture" height="50" width="50">
+                                    <% } %>
                                     <div class="author-name">
-                                        <h2><%= posts[i].post.embed.author.displayName %></h2>
-                                        <p class="p-nickname"><a href="https://staging.bsky.app/profile/<%= posts[i].post.embed.author.handle %>" class="u-url p-name"><%= posts[i].post.embed.author.handle %></a></p>
+                                        <% if (posts[i].post.embed.author.displayName) { %>
+                                            <h2><%= posts[i].post.embed.author.displayName %></h2>
+                                            <p class="p-nickname"><a href="https://staging.bsky.app/profile/<%= posts[i].post.embed.author.handle %>" class="u-url p-name"><%= posts[i].post.embed.author.handle %></a></p>
+                                        <% } else { %>
+                                            <h2 class="p-nickname"><a href="https://staging.bsky.app/profile/<%= posts[i].post.embed.author.handle %>" class="u-url p-name"><%= posts[i].post.embed.author.handle %></a></h2>
+                                        <% } %>
                                     </div>
                                 </div>
+                                <% } %>
                                 <blockquote>
                                     <%= posts[i].post.embed.value.text %>
                                 </blockquote>

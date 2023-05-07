@@ -31,10 +31,33 @@ xhr.send(JSON.stringify({
 }));
 
 var token = "";
+var auth_token_expires;
 
 xhr.onreadystatechange = function () {
     if (this.readyState == 4) {
-        token = JSON.parse(this.responseText).accessJwt;
+        var parsed_json_response = JSON.parse(this.responseText);
+        token = parsed_json_response.accessJwt;
+        refresh = parsed_json_response.refreshJwt;
+        // in 30 mins
+        auth_token_expires = new Date().getTime() + 1000 * 60 * 30;
+    }
+}
+
+function refreshAuthToken () {
+    var xhr = new XMLHttpRequest();
+
+    xhr.open("POST", "https://bsky.social/xrpc/com.atproto.server.refreshSession", true);
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.send(JSON.stringify({
+        jwt: refresh
+    }));
+
+    xhr.onreadystatechange = function () {
+        if (this.readyState == 4) {
+            var parsed_json_response = JSON.parse(this.responseText);
+            token = parsed_json_response.accessJwt;
+            refresh = parsed_json_response.refreshJwt;
+        }
     }
 }
 
@@ -89,6 +112,10 @@ const options = {
 const cache = new LRUCache(options);
 
 app.route("/").get(async (req, res) => {
+    if (new Date().getTime() > auth_token_expires) {
+        refreshAuthToken();
+    }
+
     var url = req.query.url;
 
     if (!url) {
@@ -220,6 +247,10 @@ app.route("/").get(async (req, res) => {
 });
 
 app.route("/feed").get(async (req, res) => {
+    if (new Date().getTime() > auth_token_expires) {
+        refreshAuthToken();
+    }
+
     var user = req.query.user;
 
     if (!user) {
@@ -247,12 +278,20 @@ app.route("/feed").get(async (req, res) => {
                 return;
             }
 
+            var embed_count = 0;
+
             for (var i = 0; i < posts.length; i++) {
                 var post = posts[i].post;
 
                 if (post.embed && post.embed.record) {
                     var embed = post.embed.record;
                     var embed_type = "record";
+
+                    if (embed.record) {
+                        embed = embed.record;
+                    }
+
+                    embed_count++;
                 } else if (post.embed && post.embed.images) {
                     var embed = post.embed.images;
                     var embed_type = "images";
@@ -278,6 +317,8 @@ app.route("/feed").get(async (req, res) => {
 
                 post.record.createdAt = readableDate;
             }
+
+            console.log("Embed count: " + embed_count);
             
             res.render("feed", {
                 author: user,
