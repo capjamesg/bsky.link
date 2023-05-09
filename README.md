@@ -50,3 +50,4 @@ This project is licensed under an [MIT 0 License](LICENSE).
 ## Contributors
 
 - capjamesg
+- kevinmarks
