@@ -1,3 +1,4 @@
+"use strict";
 const express = require("express");
 const ejs = require("ejs");
 const { LRUCache } = require("lru-cache");
@@ -11,6 +12,14 @@ const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch
 const PORT = process.env.PORT || 3008;
 const VALID_URLS = ["bsky.app", "staging.bsky.app"];
 
+const debug_log = false;
+
+function log(s) {
+    if(debug_log){
+        console.log(s)
+    }
+}
+
 const app = express();
 
 app.set("view engine", "ejs");
@@ -21,44 +30,67 @@ app.use((err, req, res, next) => {
     });
 });
 
-var xhr = new XMLHttpRequest();
 
-xhr.open("POST", "https://bsky.social/xrpc/com.atproto.server.createSession", true);
-xhr.setRequestHeader("Content-Type", "application/json");
-xhr.send(JSON.stringify({
-    identifier: config.HANDLE,
-    password: config.PASSWORD
-}));
+let token = "";
+let auth_token_expires = new Date().getTime();
+let refresh = "";
+getAuthToken();
 
-var token = "";
-var auth_token_expires;
-
-xhr.onreadystatechange = function () {
-    if (this.readyState == 4) {
-        var parsed_json_response = JSON.parse(this.responseText);
-        token = parsed_json_response.accessJwt;
-        refresh = parsed_json_response.refreshJwt;
-        // in 30 mins
-        auth_token_expires = new Date().getTime() + 1000 * 60 * 30;
-    }
+function getAuthToken () {
+    log("getAuthToken called ");
+    return fetch("https://bsky.social/xrpc/com.atproto.server.createSession", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            "identifier": config.HANDLE,
+            "password": config.PASSWORD
+        })
+    })
+    .then (response => {
+        log("getAuthToken status:'"+response.status+"' statustText:'"+response.statusText+"';")
+        return response.json().then((data) => {
+            //log(data);
+            if (response.status==200) {
+                token = data.accessJwt;
+                refresh = data.refreshJwt;
+                log("getAuthToken response: token='"+token+"'; refresh='"+refresh+"';")
+                auth_token_expires = new Date().getTime() + 1000 *5 * 60 * 30;
+            }
+        })
+    })
+    .catch(err =>{
+        //catch err 
+        console.log(err);
+    });                       
 }
 
 function refreshAuthToken () {
-    var xhr = new XMLHttpRequest();
-
-    xhr.open("POST", "https://bsky.social/xrpc/com.atproto.server.refreshSession", true);
-    xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.send(JSON.stringify({
-        jwt: refresh
-    }));
-
-    xhr.onreadystatechange = function () {
-        if (this.readyState == 4) {
-            var parsed_json_response = JSON.parse(this.responseText);
-            token = parsed_json_response.accessJwt;
-            refresh = parsed_json_response.refreshJwt;
+    log("refreshAuthToken called with: token='"+token+"'; refresh='"+refresh+"';");
+    return fetch("https://bsky.social/xrpc/com.atproto.server.refreshSession", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + refresh
         }
-    }
+    })
+    .then (response => {
+        log("refreshAuthToken status:'"+response.status+"' statustText:'"+response.statusText+"';")
+        return response.json().then((data) => {
+            //log(data);
+            if (response.status==200) {
+                token = data.accessJwt;
+                refresh = data.refreshJwt;
+                auth_token_expires = new Date().getTime() + 1000 *5 * 60 * 30;
+                log("refreshAuthToken response: token='"+token+"'; refresh='"+refresh+"';")
+            }
+        })
+    })
+    .catch(err =>{
+        //catch err 
+        console.log(err);
+    });                       
 }
 
 function flattenReplies (replies, author_handle, iteration = 0) {
@@ -113,7 +145,7 @@ const cache = new LRUCache(options);
 
 app.route("/").get(async (req, res) => {
     if (new Date().getTime() > auth_token_expires) {
-        refreshAuthToken();
+        await refreshAuthToken();
     }
 
     var url = req.query.url;
@@ -160,8 +192,8 @@ app.route("/").get(async (req, res) => {
         res.render("post", data);
         return;
     }
-
-    fetch("https://bsky.social/xrpc/com.atproto.identity.resolveHandle?handle=" + handle, {
+    log("resolveHandle fetch: token='"+token+"'; refresh='"+refresh+"';");
+    return fetch("https://bsky.social/xrpc/com.atproto.identity.resolveHandle?handle=" + handle, {
         method: "GET",
         headers: {
             "Content-Type": "application/json",
@@ -169,6 +201,7 @@ app.route("/").get(async (req, res) => {
         }
     }).then((response) => {
         response.json().then((did) => {
+            log("getPostThread fetch: token='"+token+"'; refresh='"+refresh+"';");
             fetch(`https://bsky.social/xrpc/app.bsky.feed.getPostThread?uri=at://${did.did}/app.bsky.feed.post/${post_id}`, {
                 method: "GET",
                 headers: {
@@ -248,7 +281,7 @@ app.route("/").get(async (req, res) => {
 
 app.route("/feed").get(async (req, res) => {
     if (new Date().getTime() > auth_token_expires) {
-        refreshAuthToken();
+        await refreshAuthToken();
     }
 
     var user = req.query.user;
@@ -259,7 +292,7 @@ app.route("/feed").get(async (req, res) => {
         });
         return;
     }
-
+    log("getAuthorFeed fetch: token='"+token+"'; refresh='"+refresh+"';");
     fetch("https://bsky.social/xrpc/app.bsky.feed.getAuthorFeed?actor=" + user, {
         method: "GET",
         headers: {
