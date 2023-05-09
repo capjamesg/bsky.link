@@ -89,7 +89,7 @@
                         </div>
                     <% } %>
                 </blockquote>
-                <a href="<%= post_url %>" class="u-url u-uid <% if (posts[i].reason) { %>u-repost-of<% } %>"><time class="dt-published datelink" datetime="<%= created_at %>"><%= created_at %></time></a>
+                <a href="<%= post_url %>" class="u-url u-uid"><time class="dt-published datelink" datetime="<%= created_at %>"><%= created_at %></time></a>
                 <div class="post-actions">
                     <a href="<%= post_url %>">❤️ <%= like_count %> likes</a>
                     <a href="<%= post_url %>">🔄 <%= repost_count %> reposts</a>
