@@ -171,8 +171,8 @@ app.route("/").get(async (req, res) => {
         return;
     }
 
-    const show_thread = req.query.show_thread == "t";
-    const hide_parent = req.query.hide_parent == "t";
+    const show_thread = (req.query.show_thread == "on") || (req.query.show_thread == "t"); //support legacy value of 't' for existing URLs
+    const hide_parent = req.query.hide_parent == "on";
 
     const handle = parsed_url.pathname.split("/")[2];
     const post_id = parsed_url.pathname.split("/")[4];
@@ -183,9 +183,17 @@ app.route("/").get(async (req, res) => {
         });
         return;
     }
-
-    if (cache.has(url)) {
-        const data = cache.get(url);
+    let query_parts = [];
+    if (show_thread){
+        query_parts.push("show_thread=on");
+    }
+    if (hide_parent){
+        query_parts.push("hide_parent=on");
+    }
+    query_parts.push("url="+url);
+    const query_string = "?" + query_parts.join("&");
+    if (cache.has(query_string)) {
+        const data = cache.get(query_string);
         res.render("post", data);
         return;
     }
@@ -244,10 +252,10 @@ app.route("/").get(async (req, res) => {
 
                     const all_replies = flattenReplies(data.thread.replies, author_handle);
 
-                    let parent;
+                    let parent = null;
 
                     if (hide_parent) {
-                        parent = [];
+                        parent = null;
                     } else {
                         parent = data.thread.parent ? data.thread.parent : null;
                     }
@@ -257,7 +265,7 @@ app.route("/").get(async (req, res) => {
                         author: data.thread.post.author,
                         embed: embed,
                         embed_type: embed_type,
-                        url: "https://bsky.link/?url=" + url,
+                        url: "https://bsky.link/" + query_string,
                         post_url: url,
                         reply_count: data.thread.post.replyCount,
                         like_count: data.thread.post.likeCount,
@@ -267,7 +275,7 @@ app.route("/").get(async (req, res) => {
                         parent: parent
                     };
 
-                    cache.set(url, response_data);
+                    cache.set(query_string, response_data);
 
                     res.render("post", response_data);
                 });
