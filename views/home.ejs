@@ -32,7 +32,10 @@
             <form action="/" method="GET">
                 <input type="url" name="url" placeholder="Paste a Bluesky Post URL here" required><br><br>
                 <label for="show_thread">Show thread?</label>
-                <input type="radio" name="show_thread" value="t" id="show_thread" checked>
+                <input type="checkbox" name="show_thread" id="show_thread" checked>
+                <label for="hide_parent">Hide Parent?</label>
+                <input type="checkbox" name="hide_parent" id="hide_parent" >
+
                 <br><br>
                 <button type="submit">Generate</button>
             </form>
@@ -68,14 +71,17 @@
         <script>
             document.querySelector('form').addEventListener('submit', function(e) {
                 e.preventDefault();
-
-                if (e.target.elements.show_thread.value == 't') {
-                    var url = 'https://bsky.link/?show_thread=t&url=' + e.target.elements.url.value;
-                } else {
-                    var url = 'https://bsky.link/?url=' + e.target.elements.url.value;
+                let query_parts = [];
+                if (e.target.elements.show_thread.checked){
+                    query_parts.push("show_thread=on");
                 }
+                if (e.target.elements.hide_parent.checked){
+                    query_parts.push("hide_parent=on");
+                }
+                query_parts.push("url="+e.target.elements.url.value);
+                const query_string = "?" + query_parts.join("&");
 
-                var url = new URL(url);
+                const url = new URL("https://bsky.link/"+query_string);
 
                 const iframe = document.createElement('iframe');
                 iframe.src = url;

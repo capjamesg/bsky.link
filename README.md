@@ -35,7 +35,14 @@ To run the application, first install the required dependencies:
 npm install
 ```
 
-Then, open `config.js` and add your Bluesky handle and password.
+Then, open `config.js` and add your Bluesky handle and password, like this:
+```
+const config = {
+    "HANDLE":"yourname.bsky.social",
+    "PASSWORD":"xxxx-xxxx-xxxx-xxxx"
+}
+module.exports = config;
+```
 
 Finally, run the following command to start the application server:
 
