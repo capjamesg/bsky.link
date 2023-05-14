@@ -69,7 +69,7 @@
                                 </blockquote>
                             </div>
                         <% } else if (posts[i].post.embed_type == "images") { %>
-                            <% for (let j = 0; j < posts[i].post.embed.length; i++) { %>
+                            <% for (let j = 0; j < posts[i].post.embed.length; j++) { %>
                                 <img src="<%= posts[i].post.embed[j].fullsize %>" alt="<%= posts[i].post.embed[j].alt %>" class="embedded-image u-image" />
                             <% } %>
                         <% } %>
