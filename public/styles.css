@@ -17,6 +17,14 @@ img {
     height:1em;
     width:1em;
 }
+.inner-embed .author h2 {
+    display: inline;
+    font-size: 1em;
+}
+.inner-embed .author p {
+    display: inline;
+}
+
 .inner-embed {
     border: 1px solid lightgray;
     border-radius: 8px;

@@ -29,105 +29,45 @@
             }
         </style>
     </head>
+{% import "macro.njk" as macro %}
     <body>
         <main>
             {% if (thread.parent and not hide_parent) %}
                 <div class="h-entry">
-                    <div class="author p-author h-card">
-                        <img src="{{ thread.parent.post.author.avatar }}" alt="{{ thread.parent.post.author.displayName }}'s profile picture" height="50" width="50" class="u-photo">
-                        <div class="author-name">
-                            <h2 class="p-name">{{ thread.parent.post.author.displayName }}</h2>
-                            <p class="p-nickname"><a href="https://staging.bsky.app/profile/{{ thread.parent.post.author.handle }}" class="u-url">{{ thread.parent.post.author.handle }}</a></p>
-                        </div>
-                    </div>
+                    {{macro.author (thread.parent.post)}}
                     <blockquote>
                         <span class="e-content">{{ thread.parent.post.record.text }}</span>
+                        {{macro.embeds(thread.parent.post)}}
                     </blockquote>
-                    <a href="{{ post_url }}" class="permalink u-url u-uid"><time class="dt-published datelink" datetime="{{ thread.parent.post.record.createdAt }}">{{ thread.parent.post.record.createdAt | date('fromNow') }}</time></a>
-                    <div class="post-actions">
-                        ❤️ {{ thread.parent.post.likeCount }} likes
-                        🔄 {{ thread.parent.post.repostCount }} reposts
-                        💬 {{ thread.parent.post.replyCount }} replies
-                    </div>
+                    <a href="{{ post_url }}" class="permalink u-url u-uid">{{macro.time_ago(thread.parent.post.record.createdAt)}}</a>
+                    {{macro.post_actions(thread.parent.post)}}
                 </div>
                 <br>
             {% endif %}
             <div class="h-entry {% if (thread.parent and not hide_parent)  %}indent{% endif %}">
-                <div class="author p-author h-card">
-                    <img src="{{ thread.post.author.avatar }}" alt="{{ thread.post.author.displayName }}'s profile picture" height="50" width="50" class="u-photo">
-                    <div class="author-name">
-                        <h2 class="p-name">{{ thread.post.author.displayName }}</h2>
-                        <p class="p-nickname"><a href="https://staging.bsky.app/profile/{{ thread.post.author.handle }}" class="u-url">{{ thread.post.author.handle }}</a></p>
-                    </div>
-                </div>
+                {{macro.author (thread.post)}}
                 <blockquote>
                     <span class="e-content">{{ thread.post.record.text }}</span>
-                    {% if (thread.post.embed and thread.post.embed.record) %}
-                        <div class="embed inner-embed">
-                            <div class="author p-author h-card">
-                                <img src="{{ thread.post.embed.record.author.avatar }}" alt="{{ thread.post.embed.record.author.displayName }}'s profile picture" height="50" width="50">
-                                <div class="author-name">
-                                    <b class="p-name">{{ thread.post.embed.record.author.displayName }}</b>
-                                    <span class="p-nickname"><a href="https://staging.bsky.app/profile/{{ thread.post.embed.record.author.handle }}" class="u-url p-name">{{ thread.post.embed.record.author.handle }}</a></span>
-                                </div>
-                                <time class="dt-published datelink" datetime="{{ thread.post.embed.record.value.createdAt }}">{{ thread.post.embed.record.value.createdAt | date('fromNow')}}</time>
-                            </div>
-                            <blockquote>
-                                {{ thread.post.embed.record.value.text }}
-                            </blockquote>
-                            {% for embed2 in thread.post.embed.record.embeds %}
-                                {% for image in  embed2.images %}
-                                <img src="{{ image.fullsize }}" alt="{{ image.alt }}" class="embedded-image u-image" />
-                                {% endfor %}
-                            {% endfor %}
-                        </div>
-                    {%  elif (thread.post.embed and thread.post.embed.images )  %}
-                        {% for image in  thread.post.embed.images %}
-                            <img src="{{ image.fullsize }}" alt="{{ image.alt }}" class="embedded-image u-image" />
-                        {% endfor %}
-                    {%  elif (thread.post.embed and thread.post.embed.external)  %}
-                        <div class="external-embed">
-                            {% if thread.post.embed.external.thumb %}
-                            <img src="{{ thread.post.embed.external.thumb }}" alt="{{ thread.post.embed.external.title }}" class="embedded-image u-image" />
-                            {% endif %}
-                            <div class="text-card">
-                                <p class="title"><a href="{{ thread.post.embed.external.uri }}">{{ thread.post.embed.external.title }}</a></p>
-                                <p>{{ thread.post.embed.external.description }}</p>
-                            </div>
-                        </div>
-                    {% endif %}
+                    {{ macro.embeds(thread.post)}}
                 </blockquote>
-                <a href="{{ post_url }}" class="u-url u-uid"><time class="dt-published datelink" datetime="{{ thread.post.record.createdAt }}">{{ thread.post.record.createdAt | date('fromNow')}}</time></a>
-                <div class="post-actions">
-                    <a href="{{ post_url }}">❤️ {{ thread.post.likeCount }} likes</a>
-                    <a href="{{ post_url }}">🔄 {{ thread.post.repostCount }} reposts</a>
-                    <a href="{{ post_url }}">💬 {{ thread.post.replyCount }} replies</a>
-                </div>
+                <a href="{{ post_url }}" class="u-url u-uid">{{macro.time_local(thread.post.record.createdAt)}}</a>
+                {{macro.post_actions(thread.post)}}
             </div>
             {% if show_thread %}
             {% for reply in flat_replies %}
                 <br />
                 <div class="h-entry indent{% if (thread.parent and not hide_parent) %}_twice{% endif %}">
-                    <div class="author p-author h-card">
-                        <img src="{{ reply.post.author.avatar }}" alt="{{ reply.post.author.displayName }}'s profile picture" height="50" width="50" class="u-photo">
-                        <div class="author-name">
-                            <h2 class="p-name">{{ reply.post.author.displayName }}</h2>
-                            <p class="p-nickname"><a href="https://staging.bsky.app/profile/{{ reply.post.author.handle }}" class="u-url">{{ reply.post.author.handle }}</a></p>
-                        </div>
-                    </div>
+                    {{macro.author (reply.post)}}
                     <blockquote>
                         <span class="e-content">{{ reply.post.record.text }}</span>
+                        {{macro.embeds(reply.post)}}
                     </blockquote>
-                    <time class="dt-published datelink" datetime="{{ reply.post.record.createdAt }}">{{ reply.post.record.createdAt | date('fromNow')}}</time>
-                    <div class="post-actions">
-                        ❤️ {{ reply.post.likeCount }} likes
-                        🔄 {{ reply.post.repostCount }} reposts
-                        💬 {{ reply.post.replyCount }} replies
-                    </div>
+                    {{macro.time_ago(reply.post.record.createdAt)}}
+                    {{macro.post_actions(reply.post)}}
                 </div>
                 <br>
-                <a href="{{ post_url }}">Show Full Thread</a>
             {% endfor %}
+            <a href="{{ post_url }}">Show Full Thread</a>
             {% endif %}
         </main>
     </body>
