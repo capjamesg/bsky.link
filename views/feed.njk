@@ -26,6 +26,7 @@
         <main>
             <ul class="h-feed">
                 <h1 class="p-name">Posts by {{author}}</h1>
+                {% if posts.length ==0 %}<p>No posts yet, try again later{% endif %}
                 {% for post in posts  %}
                 
                 <li class="h-entry">
