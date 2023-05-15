@@ -23,6 +23,8 @@
     "lru-cache": "^9.1.1",
     "microformats-parser": "^1.4.1",
     "node-fetch": "^3.3.1",
+    "nunjucks": "^3.2.4",
+    "nunjucks-date-filter": "^0.1.1",
     "xmlhttprequest": "^1.8.0"
   }
 }
