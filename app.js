@@ -1,6 +1,5 @@
 "use strict";
 const express = require("express");
-const ejs = require("ejs");
 const { LRUCache } = require("lru-cache");
 const nunjucks = require('nunjucks');
 const dateFilter = require('nunjucks-date-filter');
@@ -22,7 +21,6 @@ function log(s) {
 
 const app = express();
 
-// app.set("view engine", "ejs");
 app.use(express.static("public"));
 app.use((err, req, res, next) => {
     res.status(500).render("error", {
@@ -146,153 +144,6 @@ const options = {
 
 const cache = new LRUCache(options);
 
-app.route("/v1").get(async (req, res) => {
-    app.set("view engine", "ejs");
-
-    if (new Date().getTime() > auth_token_expires) {
-        await refreshAuthToken();
-    }
-
-    const url = req.query.url;
-    let parsed_url;
-
-    if (!url) {
-        // load home.ejs
-        res.render("home");
-        return;
-    }
-
-    try {
-        parsed_url = new URL(url);
-    } catch (e) {
-        res.render("error", {
-            error: "Invalid URL"
-        });
-        return;
-    }
-
-    const domain = parsed_url.hostname;
-
-    if (!VALID_URLS.includes(domain)) {
-        res.render("error", {
-            error: "Invalid URL"
-        });
-        return;
-    }
-
-    const show_thread = (req.query.show_thread == "on") || (req.query.show_thread == "t"); //support legacy value of 't' for existing URLs
-    const hide_parent = req.query.hide_parent == "on";
-
-    const handle = parsed_url.pathname.split("/")[2];
-    const post_id = parsed_url.pathname.split("/")[4];
-
-    if (!handle || !post_id) {
-        res.render("error", {
-            error: "Invalid URL"
-        });
-        return;
-    }
-    let query_parts = [];
-    if (show_thread){
-        query_parts.push("show_thread=on");
-    }
-    if (hide_parent){
-        query_parts.push("hide_parent=on");
-    }
-    query_parts.push("url="+url);
-    const query_string = "?" + query_parts.join("&");
-    if (cache.has(query_string)) {
-        const data = cache.get(query_string);
-        res.render("post", data);
-        return;
-    }
-    log("resolveHandle fetch: token='"+token+"'; refresh='"+refresh+"';");
-    return fetch("https://bsky.social/xrpc/com.atproto.identity.resolveHandle?handle=" + handle, {
-        method: "GET",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer " + token
-        }
-    }).then((response) => {
-        response.json().then((did) => {
-            log("getPostThread fetch: token='"+token+"'; refresh='"+refresh+"';");
-            fetch(`https://bsky.social/xrpc/app.bsky.feed.getPostThread?uri=at://${did.did}/app.bsky.feed.post/${post_id}`, {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": "Bearer " + token
-                },
-            }).then((response) => {
-                response.json().then((data) => {
-                    let embed = null;
-                    let embed_type = null;
-
-                    if (data && data.thread && data.thread.post) {
-                        if (data.thread.post.embed && data.thread.post.embed.record) {
-                            embed = data.thread.post.embed.record;
-                            embed_type = "record";
-                        } else if (data.thread.post.embed && data.thread.post.embed.images) {
-                            embed = data.thread.post.embed.images;
-                            embed_type = "images";
-                        } else if (data.thread.post.embed && data.thread.post.embed.external) {
-                            embed = data.thread.post.embed.external;
-                            embed_type = "external";
-                        }
-                    } else {
-                        res.render("error", {
-                            error: "Invalid URL"
-                        });
-                        return;
-                    }
-
-                    const createdAt = new Date(data.thread.post.record.createdAt);
-
-                    const readableDate = createdAt.toLocaleString("en-US", {
-                        month: "long",
-                        day: "numeric",
-                        year: "numeric",
-                        hour: "numeric",
-                        minute: "numeric",
-                        second: "numeric",
-                        hour12: true,
-                    }).replace(",", "");
-
-                    const author_handle = data.thread.post.author.handle;
-
-                    const all_replies = flattenReplies(data.thread.replies, author_handle);
-
-                    let parent = null;
-
-                    if (hide_parent) {
-                        parent = null;
-                    } else {
-                        parent = data.thread.parent ? data.thread.parent : null;
-                    }
-
-                    const response_data = {
-                        data: data.thread.post.record,
-                        author: data.thread.post.author,
-                        embed: embed,
-                        embed_type: embed_type,
-                        url: "https://bsky.link/" + query_string,
-                        post_url: url,
-                        reply_count: data.thread.post.replyCount,
-                        like_count: data.thread.post.likeCount,
-                        repost_count: data.thread.post.repostCount,
-                        created_at: readableDate,
-                        replies: show_thread ? all_replies : [],
-                        parent: parent
-                    };
-
-                    cache.set(query_string, response_data);
-
-                    res.render("post", response_data);
-                });
-            });
-        });
-    });
-});
-
 app.route("/").get(async (req, res) => {
     if (new Date().getTime() > auth_token_expires) {
         await refreshAuthToken();
@@ -379,7 +230,6 @@ app.route("/").get(async (req, res) => {
                         return;
                     }
 
-
                     const author_handle = data.thread.post.author.handle;
 
                     const flat_replies = flattenReplies(data.thread.replies, author_handle);
@@ -425,100 +275,7 @@ app.route("/feed").get(async (req, res) => {
         response.json().then((data) => {
             const posts = data.feed;
 
-            // if no posts, error out
-            if (!posts || posts.length == 0) {
-                res.render("error", {
-                    error: "No posts found"
-                });
-                return;
-            }
-
             res.render("feed.njk", {
-                author: user,
-                posts: data.feed,
-                url: "https://bsky.link/feed?user=" + user,
-                post_url: "https://staging.bsky.social/profile/" + user
-            });
-        });
-    });
-});
-
-app.route("/v1/feed").get(async (req, res) => {
-    if (new Date().getTime() > auth_token_expires) {
-        await refreshAuthToken();
-    }
-
-    const user = req.query.user;
-
-    if (!user) {
-        res.render("error", {
-            error: "Invalid user"
-        });
-        return;
-    }
-    log("getAuthorFeed fetch: token='"+token+"'; refresh='"+refresh+"';");
-    return fetch("https://bsky.social/xrpc/app.bsky.feed.getAuthorFeed?actor=" + user, {
-        method: "GET",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer " + token
-        }
-    }).then((response) => {
-        response.json().then((data) => {
-            const posts = data.feed;
-
-            // if no posts, error out
-            if (!posts || posts.length == 0) {
-                res.render("error", {
-                    error: "No posts found"
-                });
-                return;
-            }
-
-            let embed_count = 0;
-
-            for (const p of posts) {
-                const post = p.post;
-                let embed = [];
-                let embed_type = null;
-                if (post.embed && post.embed.record) {
-                    embed = post.embed.record;
-                    embed_type = "record";
-
-                    if (embed.record) {
-                        embed = embed.record;
-                    }
-
-                    embed_count++;
-                } else if (post.embed && post.embed.images) {
-                    embed = post.embed.images;
-                    embed_type = "images";
-                } else {
-                    embed = [];
-                    embed_type = null;
-                }
-
-                post.embed = embed;
-                post.embed_type = embed_type;
-
-                const createdAt = new Date(post.record.createdAt);
-
-                const readableDate = createdAt.toLocaleString("en-US", {
-                    month: "long",
-                    day: "numeric",
-                    year: "numeric",
-                    hour: "numeric",
-                    minute: "numeric",
-                    second: "numeric",
-                    hour12: true,
-                }).replace(",", "");
-
-                post.record.createdAt = readableDate;
-            }
-
-            console.log("Embed count: " + embed_count);
-
-            res.render("feed", {
                 author: user,
                 posts: data.feed,
                 url: "https://bsky.link/feed?user=" + user,
