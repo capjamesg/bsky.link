@@ -23,7 +23,7 @@ const app = express();
 
 app.use(express.static("public"));
 app.use((err, req, res, next) => {
-    res.status(500).render("error", {
+    res.status(500).render("error.njk", {
         error: "There was an error loading this page."
     });
 });
@@ -261,8 +261,8 @@ app.route("/feed").get(async (req, res) => {
     const user = req.query.user;
 
     if (!user) {
-        res.render("error", {
-            error: "Invalid user"
+        res.render("error.njk", {
+            error: "You need to use a url like bsky.link/feed?user=jay.bsky.team"
         });
         return;
     }
