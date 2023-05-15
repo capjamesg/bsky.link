@@ -13,6 +13,23 @@ img {
     display: flex;
     align-items: center;
 }
+.inner-embed .author img {
+    height:1em;
+    width:1em;
+}
+.inner-embed .author h2 {
+    display: inline;
+    font-size: 1em;
+}
+.inner-embed .author p {
+    display: inline;
+}
+
+.inner-embed {
+    border: 1px solid lightgray;
+    border-radius: 8px;
+    padding: 0.5em;
+}
 .author-name h2, .author-name p {
     margin: 0;
 }
@@ -99,6 +116,9 @@ code {
 .indent {
     margin-left: 20px;
 }
+.indent_twice {
+    margin-left: 40px;
+}
 .external-embed {
     margin-top: 25px;
     border: 1px solid #ccc;
@@ -114,6 +134,10 @@ code {
 }
 .external-embed .text-card .title {
     font-size: 1.2em;
+    margin-top: 0;
+}
+.external-embed .text-card .desc {
+    font-size: 0.8em;
     margin-top: 0;
 }
 @media screen and (max-width: 500px) {

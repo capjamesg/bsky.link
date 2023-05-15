@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        <title>Post by {{ thread.post.author.displayName }}</title>
+
+        <meta name="description" content="{{ thread.post.record.text }}" />
+        
+        <meta property="og:title" content="Post by {{ thread.post.author.displayName }}" />
+        <meta property="og:description" content="{{ thread.post.record.text }}" />
+        <meta property="article:author" content="{{ thread.post.author.handle }}" />
+
+        <link rel="icon" href="https://bsky.link/favicon.svg" type="image/svg+xml" />
+        <link rel="icon" href="https://bsky.link/favicon.png" type="image/png" />
+
+        {% if (thread.post.embed and thread.post.embed.images )  %}
+            <meta property="og:image" content="{{ thread.post.embed.images[0].fullsize }}" />
+            <meta property="og:image:alt" content="{{ thread.post.embed.images[0].alt }}" />
+        {% endif %}
+
+        <link rel="stylesheet" href="/styles.css">
+
+        <style>
+            html {
+                border-top: none !important;
+            }
+        </style>
+    </head>
+{% import "macro.njk" as macro %}
+    <body>
+        <main>
+            {% if (thread.parent and not hide_parent) %}
+                <div class="h-entry">
+                    {{macro.author (thread.parent.post)}}
+                    <blockquote>
+                        <span class="e-content">{{ thread.parent.post.record.text }}</span>
+                        {{macro.embeds(thread.parent.post)}}
+                    </blockquote>
+                    <a href="{{ macro.post_url(thread.parent.post) }}" class="permalink u-url u-uid">{{macro.time_ago(thread.parent.post.record.createdAt)}}</a>
+                    {{macro.post_actions(thread.parent.post)}}
+                </div>
+                <br>
+            {% endif %}
+            <div class="h-entry {% if (thread.parent and not hide_parent)  %}indent{% endif %}">
+                {{macro.author (thread.post)}}
+                <blockquote>
+                    <span class="e-content">{{ thread.post.record.text }}</span>
+                    {{ macro.embeds(thread.post)}}
+                </blockquote>
+                <a href="{{ macro.post_url(thread.post) }}" class="u-url u-uid">{{macro.time_local(thread.post.record.createdAt)}}</a>
+                {{macro.post_actions(thread.post)}}
+            </div>
+            {% if show_thread %}
+            {% for reply in flat_replies %}
+                <br />
+                <div class="h-entry indent{% if (thread.parent and not hide_parent) %}_twice{% endif %}">
+                    {{macro.author (reply.post)}}
+                    <blockquote>
+                        <span class="e-content">{{ reply.post.record.text }}</span>
+                        {{macro.embeds(reply.post)}}
+                    </blockquote>
+                    <a href="{{ macro.post_url(reply.post) }}" class="u-url u-uid">{{macro.time_ago(reply.post.record.createdAt)}}</a>
+                    {{macro.post_actions(reply.post)}}
+                </div>
+                <br>
+            {% endfor %}
+            <a href="{{ post_url }}">Show Full Thread</a>
+            {% endif %}
+        </main>
+    </body>
+</html>

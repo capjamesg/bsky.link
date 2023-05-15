@@ -1,0 +1,64 @@
+{% macro time_ago(t) %}
+    {% if t %}
+        <time class="dt-published datelink" datetime="{{ t }}">{{ t | date('fromNow')}}</time>
+    {% endif %}
+{% endmacro %}
+
+{% macro time_local(t) %}
+    {% if t %}
+        <time class="dt-published datelink" datetime="{{ t }}">{{ t | date('ll')}} at {{ t | date('LT')}}</time>
+    {% endif %}
+{% endmacro %}
+
+{% macro post_actions(p) %}
+<div class="post-actions">
+    ❤️ {{ p.likeCount }} likes
+    🔄 {{ p.repostCount }} reposts
+    💬 {{ p.replyCount }} replies
+</div>
+{% endmacro %}
+
+{% macro author(p,t) %}
+<div class="author p-author h-card">
+    <img src="{{ p.author.avatar }}" alt="{{ p.author.displayName }}'s profile picture" height="50" width="50" class="u-photo">
+    <div class="author-name">
+        <h2 class="p-name">{{ p.author.displayName }}</h2>
+        <span class="p-nickname"><a href="https://staging.bsky.app/profile/{{ p.author.handle }}" class="u-url">{{ p.author.handle }}</a></span>
+    </div>
+    {{time_ago(t)}}
+</div>
+{% endmacro %}
+
+{% macro embeds(p) %}
+{% if (p.embed and p.embed.record) %}
+    <div class="embed inner-embed">
+        {{author (p.embed.record,p.embed.record.value.createdAt)}}
+        <blockquote>
+            {{ p.embed.record.value.text }}
+        </blockquote>
+        {% for embed2 in p.embed.record.embeds %}
+            {% for image in  embed2.images %}
+            <img src="{{ image.fullsize }}" alt="{{ image.alt }}" class="embedded-image u-image" />
+            {% endfor %}
+        {% endfor %}
+    </div>
+{%  elif (p.embed and p.embed.images )  %}
+    {% for image in  p.embed.images %}
+        <img src="{{ image.fullsize }}" alt="{{ image.alt }}" class="embedded-image u-image" />
+    {% endfor %}
+{%  elif (p.embed and p.embed.external)  %}
+    <div class="external-embed">
+        {% if p.embed.external.thumb %}
+        <img src="{{ p.embed.external.thumb }}" alt="{{ p.embed.external.title }}" class="embedded-image u-image" />
+        {% endif %}
+        <div class="text-card">
+            <p {% if p.embed.external.title %}class="title"{% endif %}><a href="{{ p.embed.external.uri }}">{% if p.embed.external.title %}{{ p.embed.external.title }}{% else %}{{p.embed.external.uri}}{% endif %}</a></p>
+            <p class="p-summary desc">{{ p.embed.external.description }}</p>
+        </div>
+    </div>
+{% endif %}
+{% endmacro %}
+
+{% macro post_url(p) -%}
+https://staging.bsky.app/profile/{{p.author.handle}}/post/{{p.uri|last_path}}
+{%- endmacro %}
