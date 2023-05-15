@@ -2,6 +2,8 @@
 const express = require("express");
 const ejs = require("ejs");
 const { LRUCache } = require("lru-cache");
+const nunjucks = require('nunjucks');
+const dateFilter = require('nunjucks-date-filter');
 
 const config = require("./config.js");
 
@@ -20,13 +22,18 @@ function log(s) {
 
 const app = express();
 
-app.set("view engine", "ejs");
+// app.set("view engine", "ejs");
 app.use(express.static("public"));
 app.use((err, req, res, next) => {
     res.status(500).render("error", {
         error: "There was an error loading this page."
     });
 });
+const nun_env = nunjucks.configure('views', { 
+    autoescape: true, 
+    'express': app 
+});
+nun_env.addFilter('date', dateFilter);
 
 
 let token = "";
@@ -140,6 +147,8 @@ const options = {
 const cache = new LRUCache(options);
 
 app.route("/").get(async (req, res) => {
+    app.set("view engine", "ejs");
+
     if (new Date().getTime() > auth_token_expires) {
         await refreshAuthToken();
     }
@@ -284,6 +293,115 @@ app.route("/").get(async (req, res) => {
     });
 });
 
+app.route("/v2").get(async (req, res) => {
+    if (new Date().getTime() > auth_token_expires) {
+        await refreshAuthToken();
+    }
+
+    const url = req.query.url;
+    let parsed_url;
+
+    if (!url) {
+        // show home
+        res.render("home.njk");
+        return;
+    }
+
+    try {
+        parsed_url = new URL(url);
+    } catch (e) {
+        res.render("error.njk", {
+            error: "Invalid URL: '"+url+"'"
+        });
+        return;
+    }
+
+    const domain = parsed_url.hostname;
+
+    if (!VALID_URLS.includes(domain)) {
+        res.render("error.njk", {
+            error: "Not a known Bluesky host '"+domain+"'"
+        });
+        return;
+    }
+
+    const show_thread = (req.query.show_thread == "on") || (req.query.show_thread == "t"); //support legacy value of 't' for existing URLs
+    const hide_parent = req.query.hide_parent == "on";
+
+    const handle = parsed_url.pathname.split("/")[2];
+    const post_id = parsed_url.pathname.split("/")[4];
+
+    if (!handle || !post_id) {
+        res.render("error.njk", {
+            error: "Empty handle '"+handle+"' or post '"+post_id+"'"
+        });
+        return;
+    }
+    let query_parts = [];
+    if (show_thread){
+        query_parts.push("show_thread=on");
+    }
+    if (hide_parent){
+        query_parts.push("hide_parent=on");
+    }
+    query_parts.push("url="+url);
+    const query_string = "?" + query_parts.join("&");
+    if (cache.has(query_string)) {
+        const data = cache.get(query_string);
+        res.render("post.njk", data);
+        return;
+    }
+    log("resolveHandle fetch: token='"+token+"'; refresh='"+refresh+"';");
+    return fetch("https://bsky.social/xrpc/com.atproto.identity.resolveHandle?handle=" + handle, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + token
+        }
+    }).then((response) => {
+        response.json().then((did) => {
+            log("getPostThread fetch: token='"+token+"'; refresh='"+refresh+"';");
+            fetch(`https://bsky.social/xrpc/app.bsky.feed.getPostThread?uri=at://${did.did}/app.bsky.feed.post/${post_id}`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + token
+                },
+            }).then((response) => {
+                response.json().then((data) => {
+
+                    if (data && data.thread && data.thread.post) {
+                        // eschew preprocessing
+                    } else {
+                        res.render("error.njk", {
+                            error: "No thread or post"
+                        });
+                        return;
+                    }
+
+
+                    const author_handle = data.thread.post.author.handle;
+
+                    const flat_replies = flattenReplies(data.thread.replies, author_handle);
+
+                    const response_data = {
+                        thread: data.thread,
+                        url: "https://bsky.link/" + query_string,
+                        post_url: url,
+                        show_thread: show_thread,
+                        hide_parent: hide_parent,
+                        flat_replies: flat_replies,
+                    };
+
+                    cache.set(query_string, response_data);
+
+                    res.render("post.njk", response_data);
+                });
+            });
+        });
+    });
+});
+
 app.route("/feed").get(async (req, res) => {
     if (new Date().getTime() > auth_token_expires) {
         await refreshAuthToken();
@@ -358,7 +476,7 @@ app.route("/feed").get(async (req, res) => {
             }
 
             console.log("Embed count: " + embed_count);
-            
+
             res.render("feed", {
                 author: user,
                 posts: data.feed,
