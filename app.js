@@ -146,7 +146,7 @@ const options = {
 
 const cache = new LRUCache(options);
 
-app.route("/").get(async (req, res) => {
+app.route("/v1").get(async (req, res) => {
     app.set("view engine", "ejs");
 
     if (new Date().getTime() > auth_token_expires) {
@@ -293,7 +293,7 @@ app.route("/").get(async (req, res) => {
     });
 });
 
-app.route("/v2").get(async (req, res) => {
+app.route("/").get(async (req, res) => {
     if (new Date().getTime() > auth_token_expires) {
         await refreshAuthToken();
     }
@@ -401,8 +401,49 @@ app.route("/v2").get(async (req, res) => {
         });
     });
 });
-
 app.route("/feed").get(async (req, res) => {
+    if (new Date().getTime() > auth_token_expires) {
+        await refreshAuthToken();
+    }
+
+    const user = req.query.user;
+
+    if (!user) {
+        res.render("error", {
+            error: "Invalid user"
+        });
+        return;
+    }
+    log("getAuthorFeed fetch: token='"+token+"'; refresh='"+refresh+"';");
+    return fetch("https://bsky.social/xrpc/app.bsky.feed.getAuthorFeed?actor=" + user, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + token
+        }
+    }).then((response) => {
+        response.json().then((data) => {
+            const posts = data.feed;
+
+            // if no posts, error out
+            if (!posts || posts.length == 0) {
+                res.render("error", {
+                    error: "No posts found"
+                });
+                return;
+            }
+
+            res.render("feed.njk", {
+                author: user,
+                posts: data.feed,
+                url: "https://bsky.link/feed?user=" + user,
+                post_url: "https://staging.bsky.social/profile/" + user
+            });
+        });
+    });
+});
+
+app.route("/v1/feed").get(async (req, res) => {
     if (new Date().getTime() > auth_token_expires) {
         await refreshAuthToken();
     }

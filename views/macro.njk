@@ -52,8 +52,8 @@
         <img src="{{ p.embed.external.thumb }}" alt="{{ p.embed.external.title }}" class="embedded-image u-image" />
         {% endif %}
         <div class="text-card">
-            <p class="title"><a href="{{ p.embed.external.uri }}">{{ p.embed.external.title }}</a></p>
-            <p>{{ p.embed.external.description }}</p>
+            <p {% if p.embed.external.title %}class="title"{% endif %}><a href="{{ p.embed.external.uri }}">{% if p.embed.external.title %}{{ p.embed.external.title }}{% else %}{{p.embed.external.uri}}{% endif %}</a></p>
+            <p class="p-summary desc">{{ p.embed.external.description }}</p>
         </div>
     </div>
 {% endif %}

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        <title>Posts by {{author}}</title>
+
+        <meta name="description" content="View posts written by {{author}}" />
+        
+        <meta property="og:title" content="Posts by {{author}}" />
+        <meta property="og:description" content="View posts written by {{author}}" />
+        <meta property="article:author" content="{{author}}" />
+
+        <link rel="alternate" type="application/rss+xml" title="Posts by {{author}}" href="https://bsky.link/feed?user={{author}}" />
+
+        <link rel="icon" href="https://bsky.link/favicon.svg" type="image/svg+xml" />
+        <link rel="icon" href="https://bsky.link/favicon.png" type="image/png" />
+
+        <link rel="stylesheet" href="/styles.css">
+    </head>
+    {% import "macro.njk" as macro %}
+
+    <body>
+        <main>
+            <ul class="h-feed">
+                <h1 class="p-name">Posts by {{author}}</h1>
+                {% for post in posts  %}
+                
+                <li class="h-entry">
+                    <hr>
+                    {% if (post.reply and post.reply.parent) %}
+                        <div class="h-entry">
+                            {{macro.author (post.reply.parent)}}
+                            <blockquote>
+                                <span class="e-content">{{ post.reply.parent.record.text }}</span>
+                                {{macro.embeds(post.reply.parent)}}
+                            </blockquote>
+                            <a href="{{ post_url }}" class="permalink u-url u-uid">{{macro.time_ago(post.reply.parent.record.createdAt)}}</a>
+                            {{macro.post_actions(post.reply.parent)}}
+                        </div>
+                        <br>
+                    {% endif %}
+                    {% if (post.reason) %}
+                        <div class="author reposted-by">
+                            <div class="author-name">
+                                <p>🔄 Reposted by <a href="https://staging.bsky.app/profile/{{ post.reason.by.handle }}" class="u-url">{{ post.reason.by.handle }}</a></p>
+                            </div>
+                        </div>
+                            <div style="margin-left: 25px">
+                    {% endif %}
+                {{macro.author (post.post)}}
+                <blockquote>
+                    <span class="e-content">{{ post.post.record.text }}</span>
+                    {{ macro.embeds(post.post)}}
+                </blockquote>
+                <a href="{{ post_url }}" class="u-url u-uid">{{macro.time_local(post.post.record.createdAt)}}</a>
+                {{macro.post_actions(post.post)}}
+                    {% if (post.reason) %}
+                        </div>
+                    {% endif %}
+                </li>
+                {% endfor %}
+            </ul>
+        </main>
+    </body>
+</html>

@@ -136,6 +136,10 @@ code {
     font-size: 1.2em;
     margin-top: 0;
 }
+.external-embed .text-card .desc {
+    font-size: 0.8em;
+    margin-top: 0;
+}
 @media screen and (max-width: 500px) {
     input[type="url"], textarea, input[type="submit"] {
         width: 100%;
