@@ -58,3 +58,7 @@
     </div>
 {% endif %}
 {% endmacro %}
+
+{% macro post_url(p) -%}
+https://staging.bsky.app/profile/{{p.author.handle}}/post/{{p.uri|last_path}}
+{%- endmacro %}

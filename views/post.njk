@@ -39,7 +39,7 @@
                         <span class="e-content">{{ thread.parent.post.record.text }}</span>
                         {{macro.embeds(thread.parent.post)}}
                     </blockquote>
-                    <a href="{{ post_url }}" class="permalink u-url u-uid">{{macro.time_ago(thread.parent.post.record.createdAt)}}</a>
+                    <a href="{{ macro.post_url(thread.parent.post) }}" class="permalink u-url u-uid">{{macro.time_ago(thread.parent.post.record.createdAt)}}</a>
                     {{macro.post_actions(thread.parent.post)}}
                 </div>
                 <br>
@@ -50,7 +50,7 @@
                     <span class="e-content">{{ thread.post.record.text }}</span>
                     {{ macro.embeds(thread.post)}}
                 </blockquote>
-                <a href="{{ post_url }}" class="u-url u-uid">{{macro.time_local(thread.post.record.createdAt)}}</a>
+                <a href="{{ macro.post_url(thread.post) }}" class="u-url u-uid">{{macro.time_local(thread.post.record.createdAt)}}</a>
                 {{macro.post_actions(thread.post)}}
             </div>
             {% if show_thread %}
@@ -62,7 +62,7 @@
                         <span class="e-content">{{ reply.post.record.text }}</span>
                         {{macro.embeds(reply.post)}}
                     </blockquote>
-                    {{macro.time_ago(reply.post.record.createdAt)}}
+                    <a href="{{ macro.post_url(reply.post) }}" class="u-url u-uid">{{macro.time_ago(reply.post.record.createdAt)}}</a>
                     {{macro.post_actions(reply.post)}}
                 </div>
                 <br>

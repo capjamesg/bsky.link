@@ -32,7 +32,9 @@ const nun_env = nunjucks.configure('views', {
     'express': app 
 });
 nun_env.addFilter('date', dateFilter);
-
+nun_env.addFilter('last_path', function(str) {
+    return str.split('/').pop();
+});
 
 let token = "";
 let auth_token_expires = new Date().getTime();
