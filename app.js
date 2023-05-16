@@ -11,7 +11,7 @@ const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch
 const PORT = process.env.PORT || 3008;
 const VALID_URLS = ["bsky.app", "staging.bsky.app"];
 
-const debug_log = false;
+const debug_log = true;
 
 function log(s) {
     if(debug_log){
@@ -39,7 +39,7 @@ nun_env.addFilter('last_path', function(str) {
 let token = "";
 let auth_token_expires = new Date().getTime();
 let refresh = "";
-getAuthToken();
+// getAuthToken();
 
 function getAuthToken () {
     log("getAuthToken called ");
@@ -54,7 +54,7 @@ function getAuthToken () {
         })
     })
     .then (response => {
-        log("getAuthToken status:'"+response.status+"' statustText:'"+response.statusText+"';")
+        log("getAuthToken status:'"+response.status+"' statusText:'"+response.statusText+"';")
         return response.json().then((data) => {
             //log(data);
             if (response.status==200) {
@@ -62,6 +62,8 @@ function getAuthToken () {
                 refresh = data.refreshJwt;
                 log("getAuthToken response: token='"+token+"'; refresh='"+refresh+"';")
                 auth_token_expires = new Date().getTime() + 1000 *5 * 60 * 30;
+            } else {
+                auth_token_expires = new Date().getTime();
             }
         })
     })
@@ -81,7 +83,7 @@ function refreshAuthToken () {
         }
     })
     .then (response => {
-        log("refreshAuthToken status:'"+response.status+"' statustText:'"+response.statusText+"';")
+        log("refreshAuthToken status:'"+response.status+"' statusText:'"+response.statusText+"';")
         return response.json().then((data) => {
             //log(data);
             if (response.status==200) {
@@ -89,6 +91,8 @@ function refreshAuthToken () {
                 refresh = data.refreshJwt;
                 auth_token_expires = new Date().getTime() + 1000 *5 * 60 * 30;
                 log("refreshAuthToken response: token='"+token+"'; refresh='"+refresh+"';")
+            } else {
+                return getAuthToken();
             }
         })
     })
@@ -212,8 +216,9 @@ app.route("/").get(async (req, res) => {
             "Authorization": "Bearer " + token
         }
     }).then((response) => {
+        log("resolveHandle fetch: status='"+response.status+"'; statusText='"+response.statusText+"';");
         response.json().then((did) => {
-            log("getPostThread fetch: token='"+token+"'; refresh='"+refresh+"';");
+            // log("getPostThread fetch: token='"+token+"'; refresh='"+refresh+"';");
             fetch(`https://bsky.social/xrpc/app.bsky.feed.getPostThread?uri=at://${did.did}/app.bsky.feed.post/${post_id}`, {
                 method: "GET",
                 headers: {
@@ -221,6 +226,15 @@ app.route("/").get(async (req, res) => {
                     "Authorization": "Bearer " + token
                 },
             }).then((response) => {
+                log("getPostThread fetch: status='"+response.status+"'; statusText='"+response.statusText+"';");
+                if (response.status ==401){
+                    auth_token_expires = new Date().getTime();
+                    res.render("error.njk", {
+                        error: "Connection problem, try reloading"
+                    });
+                    return;
+                }
+
                 response.json().then((data) => {
 
                     if (data && data.thread && data.thread.post) {
@@ -266,7 +280,7 @@ app.route("/feed").get(async (req, res) => {
         });
         return;
     }
-    log("getAuthorFeed fetch: token='"+token+"'; refresh='"+refresh+"';");
+    // log("getAuthorFeed fetch: token='"+token+"'; refresh='"+refresh+"';");
     return fetch("https://bsky.social/xrpc/app.bsky.feed.getAuthorFeed?actor=" + user, {
         method: "GET",
         headers: {
@@ -274,6 +288,14 @@ app.route("/feed").get(async (req, res) => {
             "Authorization": "Bearer " + token
         }
     }).then((response) => {
+        log("getAuthorFeed fetch: status='"+response.status+"'; statusText='"+response.statusText+"';");
+        if (response.status ==401){
+            auth_token_expires = new Date().getTime();
+            res.render("error.njk", {
+                error: "Connection problem, try reloading"
+            });
+            return;
+        }
         response.json().then((data) => {
             const posts = data.feed;
 
