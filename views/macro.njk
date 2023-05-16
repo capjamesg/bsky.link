@@ -29,6 +29,10 @@
 </div>
 {% endmacro %}
 
+{% macro post_text(p) %}
+<span class="e-content">{{ p.record.text }}</span> 
+{% endmacro %}
+
 {% macro embed_images(e) %}
     {% for image in  e.images %}
         <img src="{{ image.fullsize }}" alt="{{ image.alt }}" class="embedded-image u-image" />
@@ -39,7 +43,7 @@
 <div class="embed inner-embed">
     {{author (e.record,e.record.value.createdAt)}}
     <blockquote>
-        {{ e.record.value.text }}
+        <span class="e-content">{{ e.record.value.text }}</span>
     </blockquote>
     {% for embed2 in e.record.embeds %}
         {{embed_images(embed2)}}
