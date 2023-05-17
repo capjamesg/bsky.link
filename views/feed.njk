@@ -38,7 +38,7 @@
                                 {{macro.post_text(post.reply.parent)}}
                                 {{macro.embeds(post.reply.parent)}}
                             </blockquote>
-                            <a href="{{ post_url }}" class="permalink u-url u-uid">{{macro.time_ago(post.reply.parent.record.createdAt)}}</a>
+                            {{macro.post_link (post.reply.parent,macro.time_ago(post.reply.parent.record.createdAt))}}
                             {{macro.post_actions(post.reply.parent)}}
                         </div>
                         <br>
@@ -56,7 +56,7 @@
                     {{macro.post_text(post.post)}}
                     {{ macro.embeds(post.post)}}
                 </blockquote>
-                <a href="{{ post_url }}" class="u-url u-uid">{{macro.time_local(post.post.record.createdAt)}}</a>
+                {{macro.post_link (post.post,macro.time_local(post.post.record.createdAt))}}
                 {{macro.post_actions(post.post)}}
                     {% if (post.reason) %}
                         </div>
