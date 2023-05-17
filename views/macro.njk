@@ -29,23 +29,36 @@
 </div>
 {% endmacro %}
 
-{% macro embeds(p) %}
-{% if (p.embed and p.embed.record) %}
-    <div class="embed inner-embed">
-        {{author (p.embed.record,p.embed.record.value.createdAt)}}
-        <blockquote>
-            {{ p.embed.record.value.text }}
-        </blockquote>
-        {% for embed2 in p.embed.record.embeds %}
-            {% for image in  embed2.images %}
-            <img src="{{ image.fullsize }}" alt="{{ image.alt }}" class="embedded-image u-image" />
-            {% endfor %}
-        {% endfor %}
-    </div>
-{%  elif (p.embed and p.embed.images )  %}
-    {% for image in  p.embed.images %}
+{% macro post_text(p) %}
+<span class="e-content">{{ p.record |linkify_text|safe }}</span> 
+{% endmacro %}
+
+{% macro embed_images(e) %}
+    {% for image in  e.images %}
         <img src="{{ image.fullsize }}" alt="{{ image.alt }}" class="embedded-image u-image" />
     {% endfor %}
+{% endmacro %}
+
+{% macro embed_record(e) %}
+<div class="embed inner-embed">
+    {{author (e.record,e.record.value.createdAt)}}
+    <blockquote>
+        <span class="e-content">{{ e.record.value.text }}</span>
+    </blockquote>
+    {% for embed2 in e.record.embeds %}
+        {{embed_images(embed2)}}
+    {% endfor %}
+</div>
+{% endmacro %}
+
+{% macro embeds(p) %}
+{% if (p.embed and p.embed.media) %}
+    {{embed_images(p.embed.media)}}
+    {{embed_record(p.embed.record)}}
+{% elif (p.embed and p.embed.record) %}
+    {{embed_record(p.embed)}}
+{%  elif (p.embed and p.embed.images )  %}
+    {{embed_images(p.embed)}}
 {%  elif (p.embed and p.embed.external)  %}
     <div class="external-embed">
         {% if p.embed.external.thumb %}

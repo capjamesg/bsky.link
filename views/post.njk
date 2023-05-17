@@ -36,7 +36,7 @@
                 <div class="h-entry">
                     {{macro.author (thread.parent.post)}}
                     <blockquote>
-                        <span class="e-content">{{ thread.parent.post.record.text }}</span>
+                        {{macro.post_text(thread.parent.post)}}
                         {{macro.embeds(thread.parent.post)}}
                     </blockquote>
                     <a href="{{ macro.post_url(thread.parent.post) }}" class="permalink u-url u-uid">{{macro.time_ago(thread.parent.post.record.createdAt)}}</a>
@@ -47,7 +47,7 @@
             <div class="h-entry {% if (thread.parent and not hide_parent)  %}indent{% endif %}">
                 {{macro.author (thread.post)}}
                 <blockquote>
-                    <span class="e-content">{{ thread.post.record.text }}</span>
+                    {{macro.post_text(thread.post)}}
                     {{ macro.embeds(thread.post)}}
                 </blockquote>
                 <a href="{{ macro.post_url(thread.post) }}" class="u-url u-uid">{{macro.time_local(thread.post.record.createdAt)}}</a>
@@ -59,7 +59,7 @@
                 <div class="h-entry indent{% if (thread.parent and not hide_parent) %}_twice{% endif %}">
                     {{macro.author (reply.post)}}
                     <blockquote>
-                        <span class="e-content">{{ reply.post.record.text }}</span>
+                        {{macro.post_text(reply.post)}}
                         {{macro.embeds(reply.post)}}
                     </blockquote>
                     <a href="{{ macro.post_url(reply.post) }}" class="u-url u-uid">{{macro.time_ago(reply.post.record.createdAt)}}</a>

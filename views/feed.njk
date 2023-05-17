@@ -35,7 +35,7 @@
                         <div class="h-entry">
                             {{macro.author (post.reply.parent)}}
                             <blockquote>
-                                <span class="e-content">{{ post.reply.parent.record.text }}</span>
+                                {{macro.post_text(post.reply.parent)}}
                                 {{macro.embeds(post.reply.parent)}}
                             </blockquote>
                             <a href="{{ post_url }}" class="permalink u-url u-uid">{{macro.time_ago(post.reply.parent.record.createdAt)}}</a>
@@ -53,7 +53,7 @@
                     {% endif %}
                 {{macro.author (post.post)}}
                 <blockquote>
-                    <span class="e-content">{{ post.post.record.text }}</span>
+                    {{macro.post_text(post.post)}}
                     {{ macro.embeds(post.post)}}
                 </blockquote>
                 <a href="{{ post_url }}" class="u-url u-uid">{{macro.time_local(post.post.record.createdAt)}}</a>
