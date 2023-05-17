@@ -43,20 +43,22 @@ nun_env.addFilter('linkify_text', function(r) {
     const text_bytes = encoder.encode(r.text);
     const textchunks = [];
     let last_offset=0;
-    for (const facet of r.facets){
-        textchunks.push(decoder.decode(text_bytes.slice(last_offset,facet.index.byteStart)));
-        let closeLink=false;
-        for (const f of facet.features){
-            if (f.uri){
-                textchunks.push(`<a href='${f.uri}'>`);
-                closeLink = true;
-                break;
+    if (r.facets){
+        for (const facet of r.facets){
+            textchunks.push(decoder.decode(text_bytes.slice(last_offset,facet.index.byteStart)));
+            let closeLink=false;
+            for (const f of facet.features){
+                if (f.uri){
+                    textchunks.push(`<a href='${f.uri}'>`);
+                    closeLink = true;
+                    break;
+                }
             }
-        }
-        textchunks.push(decoder.decode(text_bytes.slice(facet.index.byteStart,facet.index.byteEnd)));
-        last_offset=facet.index.byteEnd;
-        if (closeLink){
-            textchunks.push("</a>");
+            textchunks.push(decoder.decode(text_bytes.slice(facet.index.byteStart,facet.index.byteEnd)));
+            last_offset=facet.index.byteEnd;
+            if (closeLink){
+                textchunks.push("</a>");
+            }
         }
     }
     textchunks.push(decoder.decode(text_bytes.slice(last_offset)));
