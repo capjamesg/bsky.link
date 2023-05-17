@@ -255,7 +255,7 @@ app.route("/").get(async (req, res) => {
                 },
             }).then((response) => {
                 log("getPostThread fetch: status='"+response.status+"'; statusText='"+response.statusText+"';");
-                if (response.status ==401){
+                if (response.status !=200){
                     auth_token_expires = new Date().getTime();
                     res.render("error.njk", {
                         error: "Connection problem, try reloading"
