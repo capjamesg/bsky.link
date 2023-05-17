@@ -30,7 +30,7 @@
 {% endmacro %}
 
 {% macro post_text(p) %}
-<span class="e-content">{{ p.record.text }}</span> 
+<span class="e-content">{{ p.record |linkify_text|safe }}</span> 
 {% endmacro %}
 
 {% macro embed_images(e) %}

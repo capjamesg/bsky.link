@@ -32,10 +32,36 @@ const nun_env = nunjucks.configure('views', {
     'express': app 
 });
 nun_env.addFilter('date', dateFilter);
+
 nun_env.addFilter('last_path', function(str) {
     return str.split('/').pop();
-});
+}); 
 
+nun_env.addFilter('linkify_text', function(r) {
+    const encoder = new TextEncoder();
+    let decoder = new TextDecoder();
+    const text_bytes = encoder.encode(r.text);
+    const textchunks = [];
+    let last_offset=0;
+    for (const facet of r.facets){
+        textchunks.push(decoder.decode(text_bytes.slice(last_offset,facet.index.byteStart)));
+        let closeLink=false;
+        for (const f of facet.features){
+            if (f.uri){
+                textchunks.push(`<a href='${f.uri}'>`);
+                closeLink = true;
+                break;
+            }
+        }
+        textchunks.push(decoder.decode(text_bytes.slice(facet.index.byteStart,facet.index.byteEnd)));
+        last_offset=facet.index.byteEnd;
+        if (closeLink){
+            textchunks.push("</a>");
+        }
+    }
+    textchunks.push(decoder.decode(text_bytes.slice(last_offset)));
+    return textchunks.join('');
+});
 let token = "";
 let auth_token_expires = new Date().getTime();
 let refresh = "";
@@ -208,7 +234,7 @@ app.route("/").get(async (req, res) => {
         res.render("post.njk", data);
         return;
     }
-    log("resolveHandle fetch: token='"+token+"'; refresh='"+refresh+"';");
+    // log("resolveHandle fetch: token='"+token+"'; refresh='"+refresh+"';");
     return fetch("https://bsky.social/xrpc/com.atproto.identity.resolveHandle?handle=" + handle, {
         method: "GET",
         headers: {
