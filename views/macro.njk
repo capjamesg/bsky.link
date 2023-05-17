@@ -23,9 +23,9 @@
     <img src="{{ p.author.avatar }}" alt="{{ p.author.displayName }}'s profile picture" height="50" width="50" class="u-photo">
     <div class="author-name">
         <h2 class="p-name">{{ p.author.displayName }}</h2>
-        <span class="p-nickname"><a href="https://staging.bsky.app/profile/{{ p.author.handle }}" class="u-url">{{ p.author.handle }}</a></span>
+        <a href="https://staging.bsky.app/profile/{{ p.author.handle }}" class="u-url">🔵</a><span class="p-nickname"><a href="/feed?user={{p.author.handle}}">{{ p.author.handle }}</a></span>
     </div>
-    {{time_ago(t)}}
+    {{t}}
 </div>
 {% endmacro %}
 
@@ -41,7 +41,7 @@
 
 {% macro embed_record(e) %}
 <div class="embed inner-embed">
-    {{author (e.record,e.record.value.createdAt)}}
+    {{author (e.record,post_link(e.record,time_ago(e.record.value.createdAt)))}}
     <blockquote>
         <span class="e-content">{{ e.record.value.text }}</span>
     </blockquote>
@@ -74,4 +74,8 @@
 
 {% macro post_url(p) -%}
 https://staging.bsky.app/profile/{{p.author.handle}}/post/{{p.uri|last_path}}
+{%- endmacro %}
+
+{% macro post_link (post,linktext) -%}
+<a href="{{ post_url(post) }}" class="permalink u-url u-uid">🔵</a><a href="/?show_thread=on&amp;url={{ post_url(post) }}" >{{linktext}}</a> 
 {%- endmacro %}
