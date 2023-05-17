@@ -90,7 +90,8 @@ button {
     font-size: 1em;
 }
 .datelink {
-    color: grey;
+    color: black;
+    font-weight: 200;
     text-decoration: none;
     font-size: 0.8em;
     margin-bottom: 10px;
