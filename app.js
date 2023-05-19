@@ -67,7 +67,6 @@ nun_env.addFilter('linkify_text', function(r) {
 let token = "";
 let auth_token_expires = new Date().getTime();
 let refresh = "";
-// getAuthToken();
 
 function getAuthToken () {
     log("getAuthToken called ");
@@ -303,9 +302,7 @@ app.route("/feed").get(async (req, res) => {
     const user = req.query.user;
 
     if (!user) {
-        res.render("error.njk", {
-            error: "You need to use a url like bsky.link/feed?user=jay.bsky.team"
-        });
+        res.render("feedhome.njk");
         return;
     }
     // log("getAuthorFeed fetch: token='"+token+"'; refresh='"+refresh+"';");
@@ -336,7 +333,46 @@ app.route("/feed").get(async (req, res) => {
         });
     });
 });
+app.route("/getfeed").get(async (req, res) => {
+    if (new Date().getTime() > auth_token_expires) {
+        await refreshAuthToken();
+    }
 
+    var handle = req.query.handle;
+
+    if (!handle) {
+        res.status(400).send("No handle provided");
+        return;
+    }
+
+    if (handle.startsWith("https://staging.bsky.app/profile/")) {
+        handle = handle.replace("https://staging.bsky.app/profile/", "");
+    } else if (handle.startsWith("https://bsky.app/profile/")) {
+        handle = handle.replace("https://bsky.app/profile/", "");
+    }
+
+    handle = handle.replace("/", "");
+
+    if (handle.startsWith("did:")) {
+        return fetch("https://bsky.social/xrpc/app.bsky.actor.getProfile?actor=" + handle, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + token
+            }
+        }).then((response) => {
+            response.json().then((did) => {
+                res.json({
+                    "handle": did.handle
+                });
+            });
+        });
+    } else {
+        res.json({
+            "handle": handle
+        });
+    }
+});
 // run in production mode
 app.listen(PORT, () => {
     console.log("Server started on port " + PORT);
