@@ -149,3 +149,36 @@ code {
         width: 100%;
     }
 }
+p {
+    line-height: 1.5;
+}
+.tab.active {
+    color: black;
+    font-weight: bold;
+}
+.tab:focus {
+    outline: none;
+    background: #0060df;
+    color: white;
+}
+menu {
+    padding: 0;
+}
+menu button {
+    background: white;
+    color: #0060df;
+    border: none;
+    border-bottom: 3px solid lightgrey;
+    padding: 0;
+    border-radius: 0;
+    padding-bottom: 5px;
+}
+footer {
+    margin-top: 50px;
+}
+button:focus {
+    outline: none;
+    background: yellow;
+    color: black;
+    border: 1px solid black;
+}

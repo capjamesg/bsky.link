@@ -25,51 +25,96 @@
     </head>
     <body>
         <main>
-            <h1>Generate links for Bluesky Posts</h1>
+            <h1>bsky.link</h1>
             
-            <p>Generate embeddable links for Bluesky Posts.</p>
+            <p>Generate embeddable links for Bluesky Posts and subscribable feeds for user pages.</p>
 
-            <form action="/" method="GET">
-                <input type="url" name="url" placeholder="Paste a Bluesky Post URL here" required><br><br>
-                <label for="show_thread">Show thread?</label>
-                <input type="checkbox" name="show_thread" id="show_thread" checked>
-                <label for="hide_parent">Hide Parent?</label>
-                <input type="checkbox" name="hide_parent" id="hide_parent" >
+            <menu>
+                <button type="button" class="tab active" data-tab="embed">Embed Post</button>
+                <button type="button" class="tab" data-tab="emcode">Generate RSS</button>
+                <button type="button" class="tab" data-tab="resolvedid">Resolve DID</button>
+            </menu>
 
-                <br><br>
-                <button type="submit">Generate</button>
-            </form>
+            <section id="embed">
+                <form action="/" method="GET">
+                    <input type="url" name="url" placeholder="Paste a Bluesky Post URL here" required><br><br>
+                    <label for="show_thread">Show thread?</label>
+                    <input type="checkbox" name="show_thread" id="show_thread" checked>
+                    <label for="hide_parent">Hide Parent?</label>
+                    <input type="checkbox" name="hide_parent" id="hide_parent" >
 
-            <div id="embed_url"></div>
+                    <br><br>
+                    <button type="submit">Generate</button>
+                </form>
 
-            <div id="embed"></div>
+                <div id="embed_url"></div>
 
-            <div id="embedcode"></div>
+                <div id="embed_content"></div>
 
-            <h2>How To Create Links</h2>
+                <div id="embedcodes"></div>
 
-            <p>You can create links to share using the following syntax:</p>
+                <h2>How To Create Links</h2>
 
-            <pre><code>https://bsky.link/?url=https://staging.bsky.app/profile/&lt;handle&gt;.bsky.social/post/&lt;post_id&gt;</code></pre>
+                <p>You can create links to share using the following syntax:</p>
 
-            <p>Where <code>&lt;handle&gt;</code> is the handle of the author of the post, and <code>&lt;post_id&gt;</code> is the ID of the post.</p>
+                <pre><code>https://bsky.link/?url=https://staging.bsky.app/profile/&lt;handle&gt;.bsky.social/post/&lt;post_id&gt;</code></pre>
 
-            <p>Specify the <code>show_thread</code> parameter to show the thread of replies to the post. Set it to <code>t</code> to show all the posts a user has added to a thread.</p>
+                <p>Where <code>&lt;handle&gt;</code> is the handle of the author of the post, and <code>&lt;post_id&gt;</code> is the ID of the post.</p>
 
-            <h2>Generate Microformats2 Feeds for User Profiles</h2>
+                <p>Specify the <code>show_thread</code> parameter to show the thread of replies to the post. Set it to <code>t</code> to show all the posts a user has added to a thread.</p>
+            </section>
 
-            <p>You can generate Microformats2 feeds for user profiles using the following syntax:</p>
+            <section id="emcode" style="display: none;">
+                <h2>Generate RSS Feeds for User Profiles</h2>
 
-            <pre><code>https://bsky.link/feed?user=&lt;handle&gt;</code></pre>
+                <form action="/" method="GET" id="feed_embed_form">
+                    <input type="url" name="url" placeholder="Paste a Bluesky profile URL here" required id="feed_url"><br><br>
+                    <button type="submit">Get Feed URL</button>
+                </form>
 
-            <p>Where <code>&lt;handle&gt;</code> is the handle of the user (i.e. <code>jamesg.blog</code>).</p>
+                <div id="feed_embed_url"></div>
 
+                <p>You can generate RSS feeds for user profiles using the following syntax:</p>
+
+                <pre><code>https://bsky.link/feed?user=&lt;handle&gt;</code></pre>
+
+                <p>Where <code>&lt;handle&gt;</code> is the handle of the user (i.e. <code>jamesg.blog</code>).</p>
+            </section>
+
+            <section id="resolvedid" style="display: none;">
+                <h2>Resolve a DID to Username</h2>
+
+                <form action="/" method="GET" id="didform">
+                    <input type="url" name="url" placeholder="Paste a DID here" required id="did"><br><br>
+                    <button type="submit">Resolve</button>
+                </form>
+
+                <div id="didurl"></div>
+
+                <p>You can resolve a DID using the following syntax:</p>
+
+                <pre><code>https://bsky.link/getfeed?handle=&lt;did&gt;</code></pre>
+
+                <p>Where <code>&lt;did&gt;</code> is the DID you want to resolve.</p>
+            </section>
             <footer>
-                <p>Made with ❤️ and ☕️ by <a href="https://jamesg.blog" target="_blank">jamesg.blog</a>. <a href="https://github.com/capjamesg/bsky-link-preview">View source</a>. Not affiliated with Bluesky.</p>
+                <p>Made with ❤️ and 🍵 by <a href="https://jamesg.blog" target="_blank">jamesg.blog</a> and <a href="https://www.kevinmarks.com">kevinmarks.com</a>. <a href="https://github.com/capjamesg/bsky-link-preview">View source</a>. Not affiliated with Bluesky.</p>
             </footer>
         </main>
         <script>
-            document.querySelector('form').addEventListener('submit', function(e) {
+            document.getElementById('didform').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                var url = 'https://bsky.link/feed?user=' + document.querySelector('input[name="url"]').value;
+
+                fetch("https://bsky.link/getfeed?handle=" + document.querySelector('#did').value)
+                    .then(response => response.json())
+                    .then(data => {
+                        var handle = data["handle"];
+                        document.querySelector('#did_url').innerHTML = '<a href="' + url + '" target="_blank">' + url + '</a>';
+                    });
+            });
+            document.querySelector('#embed form').addEventListener('submit', function(e) {
                 e.preventDefault();
                 let query_parts = [];
                 if (e.target.elements.show_thread.checked){
@@ -90,7 +135,7 @@
                 iframe.frameBorder = '0';
                 iframe.allow = 'autoplay; encrypted-media';
                 iframe.allowFullscreen = true;
-                document.querySelector('#embed').innerHTML = iframe.outerHTML;
+                document.querySelector('#embed_content').innerHTML = iframe.outerHTML;
 
                 const h2 = document.createElement('h2');
                 h2.innerText = 'Embed';
@@ -106,11 +151,11 @@
                 embedCode.style.border = '1px solid #ccc';
                 embedCode.style.borderRadius = '5px';
                 embedCode.style.fontFamily = 'monospace';
-                document.querySelector('#embedcode').innerHTML = embedCode.outerHTML;
+                document.querySelector('#embedcodes').innerHTML = embedCode.outerHTML;
 
                 const embedCodeHeading = document.createElement('h2');
                 embedCodeHeading.innerText = 'Embed Code';
-                document.querySelector('#embedcode').prepend(embedCodeHeading);
+                document.getElementById('embedcodes').prepend(embedCodeHeading);
 
                 // show embed url
                 const embedH2 = document.createElement('h2');
@@ -121,6 +166,34 @@
                 embedUrl.innerText = url;
                 document.querySelector('#embed_url').append(embedUrl);
             });
+            document.getElementById('feed_embed_form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const url = new URL("https://bsky.link/feed?user=" + document.getElementById('feed_url').value);
+                const feedUrl = document.createElement('a');
+                feedUrl.href = url;
+                feedUrl.innerText = url;
+                document.querySelector('#feed_embed_url').innerHTML = feedUrl.outerHTML;
+            });
+
+            function copyToKeyboard (element) {
+                element.select();
+                element.setSelectionRange(0, 99999);
+                document.execCommand("copy");
+            }
+                const tabs = document.querySelectorAll('.tab');
+                tabs.forEach(tab => {
+                    tab.addEventListener('click', function(e) {
+                        const tab = e.target.dataset.tab;
+                        document.querySelectorAll('section').forEach(section => {
+                            section.style.display = 'none';
+                        });
+                        document.querySelector('#'+tab).style.display = 'block';
+                        document.querySelectorAll('.tab').forEach(tab => {
+                            tab.classList.remove('active');
+                        });
+                        e.target.classList.add('active');
+                    });
+                });
         </script>
     </body>
 </html>
