@@ -31,7 +31,7 @@
 
             <menu>
                 <button type="button" class="tab {% if tab == '' or tab == "embed"  %}active{% endif %}" data-tab="embed">Embed Post</button>
-                <button type="button" class="tab {% if tab == "emcode" %}active{% endif %}" data-tab="emcode">Generate RSS</button>
+                <button type="button" class="tab {% if tab == "emcode" %}active{% endif %}" data-tab="emcode">Generate Feed</button>
                 <button type="button" class="tab {% if tab == "resolvedid" %}active{% endif %}" data-tab="resolvedid">Resolve DID</button>
             </menu>
 
@@ -65,7 +65,7 @@
             </section>
 
             <section id="emcode" {% if tab != "emcode"  %} style="display: none;"{% endif %}>
-                <h2>Generate RSS Feeds for User Profiles</h2>
+                <h2>Generate Feeds for User Profiles</h2>
 
                 <form action="/" method="GET" id="feed_embed_form">
                     <input name="url" placeholder="Paste a Bluesky profile URL here" required id="feed_url"><br><br>
@@ -74,7 +74,7 @@
 
                 <div id="feed_embed_url"></div>
 
-                <p>You can generate RSS feeds for user profiles using the following syntax:</p>
+                <p>You can generate feeds for user profiles using the following syntax:</p>
 
                 <pre><code>https://bsky.link/feed?user=&lt;handle&gt;</code></pre>
 
@@ -172,7 +172,10 @@
                 const feedUrl = document.createElement('a');
                 feedUrl.href = url;
                 feedUrl.innerText = url;
-                document.querySelector('#feed_embed_url').innerHTML = feedUrl.outerHTML;
+                const rssUrl = document.createElement('a');
+                rssUrl.href = "https://granary.io/url?input=html&output=rss&url="+url;
+                rssUrl.innerText = "RSS feed";
+                document.querySelector('#feed_embed_url').innerHTML = feedUrl.outerHTML+"<p>"+rssUrl.outerHTML;
             });
 
             function copyToKeyboard (element) {
