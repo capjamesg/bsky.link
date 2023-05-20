@@ -30,12 +30,12 @@
             <p>Generate embeddable links for Bluesky Posts and subscribable feeds for user pages.</p>
 
             <menu>
-                <button type="button" class="tab active" data-tab="embed">Embed Post</button>
-                <button type="button" class="tab" data-tab="emcode">Generate RSS</button>
-                <button type="button" class="tab" data-tab="resolvedid">Resolve DID</button>
+                <button type="button" class="tab {% if tab == '' or tab == "embed"  %}active{% endif %}" data-tab="embed">Embed Post</button>
+                <button type="button" class="tab {% if tab == "emcode" %}active{% endif %}" data-tab="emcode">Generate RSS</button>
+                <button type="button" class="tab {% if tab == "resolvedid" %}active{% endif %}" data-tab="resolvedid">Resolve DID</button>
             </menu>
 
-            <section id="embed">
+            <section id="embed" {% if tab and tab != "embed"  %} style="display: none;"{% endif %}>
                 <form action="/" method="GET">
                     <input type="url" name="url" placeholder="Paste a Bluesky Post URL here" required><br><br>
                     <label for="show_thread">Show thread?</label>
@@ -64,11 +64,11 @@
                 <p>Specify the <code>show_thread</code> parameter to show the thread of replies to the post. Set it to <code>t</code> to show all the posts a user has added to a thread.</p>
             </section>
 
-            <section id="emcode" style="display: none;">
+            <section id="emcode" {% if tab != "emcode"  %} style="display: none;"{% endif %}>
                 <h2>Generate RSS Feeds for User Profiles</h2>
 
                 <form action="/" method="GET" id="feed_embed_form">
-                    <input type="url" name="url" placeholder="Paste a Bluesky profile URL here" required id="feed_url"><br><br>
+                    <input name="url" placeholder="Paste a Bluesky profile URL here" required id="feed_url"><br><br>
                     <button type="submit">Get Feed URL</button>
                 </form>
 
@@ -81,7 +81,7 @@
                 <p>Where <code>&lt;handle&gt;</code> is the handle of the user (i.e. <code>jamesg.blog</code>).</p>
             </section>
 
-            <section id="resolvedid" style="display: none;">
+            <section id="resolvedid" {% if tab != "resolvedid"  %} style="display: none;"{% endif %}>
                 <h2>Resolve a DID to Username</h2>
 
                 <form action="/" method="GET" id="didform">
@@ -168,7 +168,7 @@
             });
             document.getElementById('feed_embed_form').addEventListener('submit', function(e) {
                 e.preventDefault();
-                const url = new URL("https://bsky.link/feed?user=" + document.getElementById('feed_url').value);
+                const url = new URL("https://bsky.link/feed?user=" + document.getElementById('feed_url').value.toLowerCase());
                 const feedUrl = document.createElement('a');
                 feedUrl.href = url;
                 feedUrl.innerText = url;
