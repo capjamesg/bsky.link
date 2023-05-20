@@ -299,10 +299,10 @@ app.route("/feed").get(async (req, res) => {
         await refreshAuthToken();
     }
 
-    const user = req.query.user;
+    const user = req.query.user?req.query.user.toLowerCase():'';
 
     if (!user) {
-        res.render("feedhome.njk");
+        res.render("home.njk",{tab:"emcode"});
         return;
     }
     // log("getAuthorFeed fetch: token='"+token+"'; refresh='"+refresh+"';");
