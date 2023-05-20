@@ -30,12 +30,12 @@
             <p>Generate embeddable links for Bluesky Posts and subscribable feeds for user pages.</p>
 
             <menu>
-                <button type="button" class="tab active" data-tab="embed">Embed Post</button>
-                <button type="button" class="tab" data-tab="emcode">Generate RSS</button>
-                <button type="button" class="tab" data-tab="resolvedid">Resolve DID</button>
+                <button type="button" class="tab {% if tab == '' or tab == "embed"  %}active{% endif %}" data-tab="embed">Embed Post</button>
+                <button type="button" class="tab {% if tab == "emcode" %}active{% endif %}" data-tab="emcode">Generate Feed</button>
+                <button type="button" class="tab {% if tab == "resolvedid" %}active{% endif %}" data-tab="resolvedid">Resolve DID</button>
             </menu>
 
-            <section id="embed">
+            <section id="embed" {% if tab and tab != "embed"  %} style="display: none;"{% endif %}>
                 <form action="/" method="GET">
                     <input type="url" name="url" placeholder="Paste a Bluesky Post URL here" required><br><br>
                     <label for="show_thread">Show thread?</label>
@@ -64,24 +64,24 @@
                 <p>Specify the <code>show_thread</code> parameter to show the thread of replies to the post. Set it to <code>t</code> to show all the posts a user has added to a thread.</p>
             </section>
 
-            <section id="emcode" style="display: none;">
-                <h2>Generate RSS Feeds for User Profiles</h2>
-
+            <section id="emcode" {% if tab != "emcode"  %} style="display: none;"{% endif %}>
+                <h2>Generate Feeds for User Profiles</h2>
+                <p>if you want an RSS Feed of all the people you follow on Bluesky, use <a href="https://bluesky-atom.appspot.com/" target="_blank">bluesky-atom.appspot.com</a> instead.
                 <form action="/" method="GET" id="feed_embed_form">
-                    <input type="url" name="url" placeholder="Paste a Bluesky profile URL here" required id="feed_url"><br><br>
+                    <input name="url" placeholder="Paste a Bluesky profile URL here" required id="feed_url"><br><br>
                     <button type="submit">Get Feed URL</button>
                 </form>
 
                 <div id="feed_embed_url"></div>
 
-                <p>You can generate RSS feeds for user profiles using the following syntax:</p>
+                <p>You can generate feeds for user profiles using the following syntax:</p>
 
                 <pre><code>https://bsky.link/feed?user=&lt;handle&gt;</code></pre>
 
                 <p>Where <code>&lt;handle&gt;</code> is the handle of the user (i.e. <code>jamesg.blog</code>).</p>
             </section>
 
-            <section id="resolvedid" style="display: none;">
+            <section id="resolvedid" {% if tab != "resolvedid"  %} style="display: none;"{% endif %}>
                 <h2>Resolve a DID to Username</h2>
 
                 <form action="/" method="GET" id="didform">
@@ -98,7 +98,7 @@
                 <p>Where <code>&lt;did&gt;</code> is the DID you want to resolve.</p>
             </section>
             <footer>
-                <p>Made with ❤️ and 🍵 by <a href="https://jamesg.blog" target="_blank">jamesg.blog</a> and <a href="https://www.kevinmarks.com">kevinmarks.com</a>. <a href="https://github.com/capjamesg/bsky-link-preview">View source</a>. Not affiliated with Bluesky.</p>
+                <p>Made with ❤️ and 🍵 by <a href="https://jamesg.blog" target="_blank">jamesg.blog</a> and <a href="https://www.kevinmarks.com">kevinmarks.com</a>.<br> <a href="https://github.com/capjamesg/bsky-link-preview">View source</a>. Not affiliated with Bluesky.</p>
             </footer>
         </main>
         <script>
@@ -168,11 +168,14 @@
             });
             document.getElementById('feed_embed_form').addEventListener('submit', function(e) {
                 e.preventDefault();
-                const url = new URL("https://bsky.link/feed?user=" + document.getElementById('feed_url').value);
+                const url = new URL("https://bsky.link/feed?user=" + document.getElementById('feed_url').value.toLowerCase());
                 const feedUrl = document.createElement('a');
                 feedUrl.href = url;
                 feedUrl.innerText = url;
-                document.querySelector('#feed_embed_url').innerHTML = feedUrl.outerHTML;
+                const rssUrl = document.createElement('a');
+                rssUrl.href = "https://granary.io/url?input=html&output=rss&url="+url;
+                rssUrl.innerText = "RSS feed";
+                document.querySelector('#feed_embed_url').innerHTML = feedUrl.outerHTML+"<p>"+rssUrl.outerHTML;
             });
 
             function copyToKeyboard (element) {
