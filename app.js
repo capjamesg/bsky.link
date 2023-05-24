@@ -142,7 +142,7 @@ function flattenReplies (replies, author_handle, iteration = 0) {
     }
 
     for (const reply of replies) {
-        if (reply.post.author.handle != author_handle) {
+        if (reply.post.author && reply.post.author.handle != author_handle) {
             continue;
         }
 
@@ -292,6 +292,9 @@ app.route("/").get(async (req, res) => {
                 });
             });
         });
+    }).catch(err =>{
+        console.log(err);
+        res.send("Err<pre>"+JSON.stringify(err,null,'')+"</pre>")
     });
 });
 app.route("/feed").get(async (req, res) => {
@@ -331,6 +334,9 @@ app.route("/feed").get(async (req, res) => {
                 post_url: "https://staging.bsky.social/profile/" + user
             });
         });
+    }).catch(err =>{
+        console.log(err);
+        res.send("Err<pre>"+JSON.stringify(err,null,'')+"</pre>")
     });
 });
 app.route("/getfeed").get(async (req, res) => {
@@ -366,6 +372,9 @@ app.route("/getfeed").get(async (req, res) => {
                     "handle": did.handle
                 });
             });
+        }).catch(err =>{
+            console.log(err);
+            res.send("Err<pre>"+JSON.stringify(err,null,'')+"</pre>")
         });
     } else {
         res.json({
