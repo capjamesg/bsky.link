@@ -22,20 +22,63 @@
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="#0060df">
+        <meta name="view-transition" content="same-origin">
     </head>
     <body>
         <main>
             <h1>bsky.link</h1>
             
             <p>Generate embeddable links for Bluesky Posts and subscribable feeds for user pages.</p>
+            <div class="tabs">
+            <section id="emcode" class="tab" >
+                <menu>
+                    <a href="#embed">Embed Post</a>
+                    <a href="#emcode" class="active">Generate Feed</a>
+                    <a href="#resolvedid">Resolve DID</a>
+                </menu>
+                <h2>Generate Feeds for User Profiles</h2>
+                <p>if you want an RSS Feed of all the people you follow on Bluesky, use <a href="https://bluesky-atom.appspot.com/" target="_blank">bluesky-atom.appspot.com</a> instead.
+                <form action="/" method="GET" id="feed_embed_form">
+                    <input name="url" placeholder="Paste a Bluesky profile URL here" required id="feed_url"><br><br>
+                    <button type="submit">Get Feed URL</button>
+                </form>
 
-            <menu>
-                <button type="button" class="tab {% if tab == '' or tab == "embed"  %}active{% endif %}" data-tab="embed">Embed Post</button>
-                <button type="button" class="tab {% if tab == "emcode" %}active{% endif %}" data-tab="emcode">Generate Feed</button>
-                <button type="button" class="tab {% if tab == "resolvedid" %}active{% endif %}" data-tab="resolvedid">Resolve DID</button>
-            </menu>
+                <div id="feed_embed_url"></div>
 
-            <section id="embed" {% if tab and tab != "embed"  %} style="display: none;"{% endif %}>
+                <p>You can generate feeds for user profiles using the following syntax:</p>
+
+                <pre><code>https://bsky.link/feed?user=&lt;handle&gt;</code></pre>
+
+                <p>Where <code>&lt;handle&gt;</code> is the handle of the user (i.e. <code>jamesg.blog</code>).</p>
+            </section>
+
+            <section id="resolvedid" class="tab" >
+                <menu>
+                    <a href="#embed">Embed Post</a>
+                    <a href="#emcode">Generate Feed</a>
+                    <a href="#resolvedid" class="active">Resolve DID</a>
+                </menu>
+                <h2>Resolve a DID to Username</h2>
+
+                <form action="/" method="GET" id="didform">
+                    <input type="url" name="url" placeholder="Paste a DID here" required id="did"><br><br>
+                    <button type="submit">Resolve</button>
+                </form>
+
+                <div id="didurl"></div>
+
+                <p>You can resolve a DID using the following syntax:</p>
+
+                <pre><code>https://bsky.link/getfeed?handle=&lt;did&gt;</code></pre>
+
+                <p>Where <code>&lt;did&gt;</code> is the DID you want to resolve.</p>
+            </section>
+            <section id="embed" class="tab" >
+                <menu>
+                    <a href="#embed" class="active">Embed Post</a>
+                    <a href="#emcode">Generate Feed</a>
+                    <a href="#resolvedid">Resolve DID</a>
+                </menu>
                 <form action="/" method="GET">
                     <input type="url" name="url" placeholder="Paste a Bluesky Post URL here" required><br><br>
                     <label for="show_thread">Show thread?</label>
@@ -62,41 +105,8 @@
                 <p>Where <code>&lt;handle&gt;</code> is the handle of the author of the post, and <code>&lt;post_id&gt;</code> is the ID of the post.</p>
 
                 <p>Specify the <code>show_thread</code> parameter to show the thread of replies to the post. Set it to <code>t</code> to show all the posts a user has added to a thread.</p>
-            </section>
-
-            <section id="emcode" {% if tab != "emcode"  %} style="display: none;"{% endif %}>
-                <h2>Generate Feeds for User Profiles</h2>
-                <p>if you want an RSS Feed of all the people you follow on Bluesky, use <a href="https://bluesky-atom.appspot.com/" target="_blank">bluesky-atom.appspot.com</a> instead.
-                <form action="/" method="GET" id="feed_embed_form">
-                    <input name="url" placeholder="Paste a Bluesky profile URL here" required id="feed_url"><br><br>
-                    <button type="submit">Get Feed URL</button>
-                </form>
-
-                <div id="feed_embed_url"></div>
-
-                <p>You can generate feeds for user profiles using the following syntax:</p>
-
-                <pre><code>https://bsky.link/feed?user=&lt;handle&gt;</code></pre>
-
-                <p>Where <code>&lt;handle&gt;</code> is the handle of the user (i.e. <code>jamesg.blog</code>).</p>
-            </section>
-
-            <section id="resolvedid" {% if tab != "resolvedid"  %} style="display: none;"{% endif %}>
-                <h2>Resolve a DID to Username</h2>
-
-                <form action="/" method="GET" id="didform">
-                    <input type="url" name="url" placeholder="Paste a DID here" required id="did"><br><br>
-                    <button type="submit">Resolve</button>
-                </form>
-
-                <div id="didurl"></div>
-
-                <p>You can resolve a DID using the following syntax:</p>
-
-                <pre><code>https://bsky.link/getfeed?handle=&lt;did&gt;</code></pre>
-
-                <p>Where <code>&lt;did&gt;</code> is the DID you want to resolve.</p>
-            </section>
+            </section>   
+            </div>         
             <footer>
                 <p>Made with ❤️ and 🍵 by <a href="https://jamesg.blog" target="_blank">jamesg.blog</a> and <a href="https://www.kevinmarks.com">kevinmarks.com</a>.<br> <a href="https://github.com/capjamesg/bsky-link-preview">View source</a>. Not affiliated with Bluesky.</p>
             </footer>
@@ -183,20 +193,6 @@
                 element.setSelectionRange(0, 99999);
                 document.execCommand("copy");
             }
-                const tabs = document.querySelectorAll('.tab');
-                tabs.forEach(tab => {
-                    tab.addEventListener('click', function(e) {
-                        const tab = e.target.dataset.tab;
-                        document.querySelectorAll('section').forEach(section => {
-                            section.style.display = 'none';
-                        });
-                        document.querySelector('#'+tab).style.display = 'block';
-                        document.querySelectorAll('.tab').forEach(tab => {
-                            tab.classList.remove('active');
-                        });
-                        e.target.classList.add('active');
-                    });
-                });
         </script>
     </body>
 </html>

@@ -305,7 +305,7 @@ app.route("/feed").get(async (req, res) => {
     const user = req.query.user?req.query.user.toLowerCase():'';
 
     if (!user) {
-        res.render("home.njk",{tab:"emcode"});
+        res.redirect('/#emcode');
         return;
     }
     // log("getAuthorFeed fetch: token='"+token+"'; refresh='"+refresh+"';");

@@ -152,33 +152,36 @@ code {
 p {
     line-height: 1.5;
 }
-.tab.active {
-    color: black;
-    font-weight: bold;
-}
-.tab:focus {
-    outline: none;
-    background: #0060df;
-    color: white;
-}
+
 menu {
     padding: 0;
 }
-menu button {
+menu a {
     background: white;
     color: #0060df;
     border: none;
     border-bottom: 3px solid lightgrey;
     padding: 0;
     border-radius: 0;
+    padding: 0.5em;
     padding-bottom: 5px;
 }
 footer {
     margin-top: 50px;
 }
-button:focus {
+button:focus, menu a:focus {
     outline: none;
     background: yellow;
     color: black;
     border: 1px solid black;
 }
+
+menu a.active {
+    outline: none;
+    background: #0060df;
+    color: white;
+  }
+.tab { display: none; }
+.tab:target { display: block; }
+.tab:last-child { display: block; }
+.tab:target ~ .tab:last-child { display: none; }
