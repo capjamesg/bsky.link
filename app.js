@@ -142,7 +142,7 @@ function flattenReplies (replies, author_handle, iteration = 0) {
     }
 
     for (const reply of replies) {
-        if (reply.post.author && reply.post.author.handle != author_handle) {
+        if (reply?.post?.author?.handle != author_handle) {
             continue;
         }
 
@@ -273,7 +273,7 @@ app.route("/").get(async (req, res) => {
                         return;
                     }
 
-                    const author_handle = data.thread.post.author.handle;
+                    const author_handle = data.thread.post?.author?.handle;
 
                     const flat_replies = flattenReplies(data.thread.replies, author_handle);
 
@@ -305,7 +305,7 @@ app.route("/feed").get(async (req, res) => {
     const user = req.query.user?req.query.user.toLowerCase():'';
 
     if (!user) {
-        res.render("home.njk",{tab:"emcode"});
+        res.redirect('/#emcode');
         return;
     }
     // log("getAuthorFeed fetch: token='"+token+"'; refresh='"+refresh+"';");
