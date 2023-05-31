@@ -23,7 +23,7 @@
     <img src="{{ p.author.avatar }}" alt="{{ p.author.displayName }}'s profile picture" height="50" width="50" class="u-photo">
     <div class="author-name">
         <h2 class="p-name">{{ p.author.displayName }}</h2>
-        <a href="https://staging.bsky.app/profile/{{ p.author.handle }}" class="u-url">🔵</a><span class="p-nickname"><a href="/feed?user={{p.author.handle}}">{{ p.author.handle }}</a></span>
+        <a href="https://bsky.app/profile/{{ p.author.handle }}" class="u-url">🔵</a><span class="p-nickname"><a href="/feed?user={{p.author.handle}}">{{ p.author.handle }}</a></span>
     </div>
     {{t}}
 </div>
@@ -73,7 +73,7 @@
 {% endmacro %}
 
 {% macro post_url(p) -%}
-https://staging.bsky.app/profile/{{p.author.handle}}/post/{{p.uri|last_path}}
+https://bsky.app/profile/{{p.author.handle}}/post/{{p.uri|last_path}}
 {%- endmacro %}
 
 {% macro post_link (post,linktext) -%}
