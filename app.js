@@ -325,13 +325,10 @@ app.route("/feed").get(async (req, res) => {
             return;
         }
         response.json().then((data) => {
-            const posts = data.feed;
 
             res.render("feed.njk", {
                 author: user,
                 posts: data.feed,
-                url: "https://bsky.link/feed?user=" + user,
-                post_url: "https://staging.bsky.social/profile/" + user
             });
         });
     }).catch(err =>{
