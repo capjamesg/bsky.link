@@ -383,3 +383,7 @@ app.route("/getfeed").get(async (req, res) => {
 app.listen(PORT, () => {
     console.log("Server started on port " + PORT);
 });
+
+process.on('uncaughtException', async (err) => {
+    console.log(err);
+});
