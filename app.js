@@ -1,5 +1,6 @@
 "use strict";
 const express = require("express");
+require('express-async-errors');
 const { LRUCache } = require("lru-cache");
 const nunjucks = require('nunjucks');
 const dateFilter = require('nunjucks-date-filter');
