@@ -7,8 +7,6 @@ const dateFilter = require('nunjucks-date-filter');
 
 const config = require("./config.js");
 
-const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
-
 const PORT = process.env.PORT || 3008;
 const VALID_URLS = ["bsky.app", "staging.bsky.app"];
 

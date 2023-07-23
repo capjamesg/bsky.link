@@ -1,4 +1,3 @@
-const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 const { mf2 } = require("microformats-parser");
 
 const ROOT_URL = "http://localhost:3008/?url=";
