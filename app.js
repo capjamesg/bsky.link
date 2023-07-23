@@ -6,6 +6,7 @@ const nunjucks = require('nunjucks');
 const dateFilter = require('nunjucks-date-filter');
 
 const config = require("./config.js");
+const domain = config.DOMAIN ?? "bsky.link";
 
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 
@@ -32,6 +33,7 @@ const nun_env = nunjucks.configure('views', {
     autoescape: true, 
     'express': app 
 });
+nun_env.addGlobal('domain', domain);
 nun_env.addFilter('date', dateFilter);
 
 nun_env.addFilter('last_path', function(str) {
@@ -280,7 +282,7 @@ app.route("/").get(async (req, res) => {
 
                     const response_data = {
                         thread: data.thread,
-                        url: "https://bsky.link/" + query_string,
+                        url: "https://"+domain+"/" + query_string,
                         post_url: url,
                         show_thread: show_thread,
                         hide_parent: hide_parent,

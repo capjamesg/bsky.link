@@ -35,11 +35,12 @@ To run the application, first install the required dependencies:
 npm install
 ```
 
-Then, open `config.js` and add your Bluesky handle and password, like this:
+Then, create `config.js` and add your Bluesky credentials (handle and password) and domain name for the Bluesky Link application, like this:
 ```
 const config = {
     "HANDLE":"yourname.bsky.social",
-    "PASSWORD":"xxxx-xxxx-xxxx-xxxx"
+    "PASSWORD":"xxxx-xxxx-xxxx-xxxx",
+    "DOMAIN":"bsky.domain.example"
 }
 module.exports = config;
 ```

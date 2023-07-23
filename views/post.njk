@@ -14,8 +14,8 @@
         <meta property="article:author" content="{{ thread.post.author.handle }}" />
         <meta name="view-transition" content="same-origin">
 
-        <link rel="icon" href="https://bsky.link/favicon.svg" type="image/svg+xml" />
-        <link rel="icon" href="https://bsky.link/favicon.png" type="image/png" />
+        <link rel="icon" href="https://{{domain}}/favicon.svg" type="image/svg+xml" />
+        <link rel="icon" href="https://{{domain}}/favicon.png" type="image/png" />
 
         {% if (thread.post.embed and thread.post.embed.images )  %}
             <meta property="og:image" content="{{ thread.post.embed.images[0].fullsize }}" />

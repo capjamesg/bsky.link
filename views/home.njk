@@ -5,16 +5,16 @@
         
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         
-        <title>bsky.link: Embed Bluesky Posts and Feeds</title>
+        <title>{{domain}}: Embed Bluesky Posts and Feeds</title>
 
         <meta name="description" content="Generate an embeddable link for a Bluesky Post." />
         
-        <meta property="og:title" content="bsky.link: Embed Bluesky Posts and Feeds" />
+        <meta property="og:title" content="{{domain}}: Embed Bluesky Posts and Feeds" />
         <meta property="og:description" content="Generate an embeddable link for a Bluesky Post." />
-        <meta property="og:image" content="https://screenshot.jamesg.blog/?url=https://bsky.link" />
+        <meta property="og:image" content="https://screenshot.jamesg.blog/?url=https://{{domain}}" />
 
-        <link rel="icon" href="https://bsky.link/favicon.svg" type="image/svg+xml" />
-        <link rel="icon" href="https://bsky.link/favicon.png" type="image/png" />
+        <link rel="icon" href="https://{{domain}}/favicon.svg" type="image/svg+xml" />
+        <link rel="icon" href="https://{{domain}}/favicon.png" type="image/png" />
 
         <link rel="stylesheet" href="/styles.css">
 
@@ -26,7 +26,7 @@
     </head>
     <body>
         <main>
-            <h1>bsky.link</h1>
+            <h1>{{domain}}</h1>
             
             <p>Generate embeddable links for Bluesky Posts and subscribable feeds for user pages.</p>
             <div class="tabs">
@@ -47,7 +47,7 @@
 
                 <p>You can generate feeds for user profiles using the following syntax:</p>
 
-                <pre><code>https://bsky.link/feed?user=&lt;handle&gt;</code></pre>
+                <pre><code>https://{{domain}}/feed?user=&lt;handle&gt;</code></pre>
 
                 <p>Where <code>&lt;handle&gt;</code> is the handle of the user (i.e. <code>jamesg.blog</code>).</p>
             </section>
@@ -69,7 +69,7 @@
 
                 <p>You can resolve a DID using the following syntax:</p>
 
-                <pre><code>https://bsky.link/getfeed?handle=&lt;did&gt;</code></pre>
+                <pre><code>https://{{domain}}/getfeed?handle=&lt;did&gt;</code></pre>
 
                 <p>Where <code>&lt;did&gt;</code> is the DID you want to resolve.</p>
             </section>
@@ -100,7 +100,7 @@
 
                 <p>You can create links to share using the following syntax:</p>
 
-                <pre><code>https://bsky.link/?url=https:/bsky.app/profile/&lt;handle&gt;.bsky.social/post/&lt;post_id&gt;</code></pre>
+                <pre><code>https://{{domain}}/?url=https://bsky.app/profile/&lt;handle&gt;.bsky.social/post/&lt;post_id&gt;</code></pre>
 
                 <p>Where <code>&lt;handle&gt;</code> is the handle of the author of the post, and <code>&lt;post_id&gt;</code> is the ID of the post.</p>
 
@@ -115,9 +115,9 @@
             document.getElementById('didform').addEventListener('submit', function(e) {
                 e.preventDefault();
                 
-                var url = 'https://bsky.link/feed?user=' + document.querySelector('input[name="url"]').value;
+                var url = 'https://{{domain}}/feed?user=' + document.querySelector('input[name="url"]').value;
 
-                fetch("https://bsky.link/getfeed?handle=" + document.querySelector('#did').value)
+                fetch("https://{{domain}}/getfeed?handle=" + document.querySelector('#did').value)
                     .then(response => response.json())
                     .then(data => {
                         var handle = data["handle"];
@@ -136,7 +136,7 @@
                 query_parts.push("url="+e.target.elements.url.value);
                 const query_string = "?" + query_parts.join("&");
 
-                const url = new URL("https://bsky.link/"+query_string);
+                const url = new URL("https://{{domain}}/"+query_string);
 
                 const iframe = document.createElement('iframe');
                 iframe.src = url;
@@ -178,7 +178,7 @@
             });
             document.getElementById('feed_embed_form').addEventListener('submit', function(e) {
                 e.preventDefault();
-                const url = new URL("https://bsky.link/feed?user=" + document.getElementById('feed_url').value.toLowerCase());
+                const url = new URL("https://{{domain}}/feed?user=" + document.getElementById('feed_url').value.toLowerCase());
                 const feedUrl = document.createElement('a');
                 feedUrl.href = url;
                 feedUrl.innerText = url;
