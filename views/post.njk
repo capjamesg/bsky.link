@@ -20,6 +20,7 @@
         {% if (thread.post.embed and thread.post.embed.images )  %}
             <meta property="og:image" content="{{ thread.post.embed.images[0].fullsize }}" />
             <meta property="og:image:alt" content="{{ thread.post.embed.images[0].alt }}" />
+            <meta name="twitter:card" content="summary_large_image" />
         {% endif %}
 
         <link rel="stylesheet" href="/styles.css">
