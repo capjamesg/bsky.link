@@ -104,6 +104,10 @@ function getAuthToken () {
 }
 
 function refreshAuthToken () {
+    if (refresh==="") {
+        log("refreshAuthToken called without refresh token;");
+        return getAuthToken();
+    }
     log("refreshAuthToken called with: token='"+token+"'; refresh='"+refresh+"';");
     return fetch("https://bsky.social/xrpc/com.atproto.server.refreshSession", {
         method: "POST",

@@ -115,13 +115,11 @@
             document.getElementById('didform').addEventListener('submit', function(e) {
                 e.preventDefault();
                 
-                var url = 'https://{{domain}}/feed?user=' + document.querySelector('input[name="url"]').value;
-
                 fetch("https://{{domain}}/getfeed?handle=" + document.querySelector('#did').value)
                     .then(response => response.json())
                     .then(data => {
                         var handle = data["handle"];
-                        document.querySelector('#did_url').innerHTML = '<a href="' + url + '" target="_blank">' + url + '</a>';
+                        document.querySelector('#didurl').innerHTML = '<a href="https://{{domain}}/feed?user=' + handle + '" target="_blank">' + handle + '</a>';
                     });
             });
             document.querySelector('#embed form').addEventListener('submit', function(e) {
