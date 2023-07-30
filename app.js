@@ -1,6 +1,6 @@
 "use strict";
-const express = require("express");
-require('express-async-errors');
+const path = require("node:path");
+const fastify = require("fastify");
 const { LRUCache } = require("lru-cache");
 const nunjucks = require('nunjucks');
 const dateFilter = require('nunjucks-date-filter');
@@ -8,71 +8,66 @@ const dateFilter = require('nunjucks-date-filter');
 const config = require("./config.js");
 const domain = config.DOMAIN ?? "bsky.link";
 
-const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
-
 const PORT = process.env.PORT || 3008;
 const VALID_URLS = ["bsky.app", "staging.bsky.app"];
 
 const debug_log = true;
 
-function log(s) {
-    if(debug_log){
-        console.log(s)
-    }
-}
+const app = fastify({ logger: debug_log });
 
-const app = express();
-
-app.use(express.static("public"));
-app.use((err, req, res, next) => {
-    res.status(500).render("error.njk", {
-        error: "There was an error loading this page."
-    });
+app.register(require('@fastify/static'), {
+    root: path.join(__dirname, 'public')
 });
-const nun_env = nunjucks.configure('views', { 
-    autoescape: true, 
-    'express': app 
-});
-nun_env.addGlobal('domain', domain);
-nun_env.addFilter('date', dateFilter);
 
-nun_env.addFilter('last_path', function(str) {
-    return str.split('/').pop();
-}); 
+app.register(require('@fastify/view'), {
+    engine: { nunjucks },
+    templates: [ 'views' ],
+    options: {
+        autoescape: true,
+        onConfigure: (nun_env) => {
+            nun_env.addGlobal('domain', domain);
+            nun_env.addFilter('date', dateFilter);
 
-nun_env.addFilter('linkify_text', function(r) {
-    const encoder = new TextEncoder();
-    let decoder = new TextDecoder();
-    const text_bytes = encoder.encode(r.text);
-    const textchunks = [];
-    let last_offset=0;
-    if (r.facets){
-        for (const facet of r.facets){
-            textchunks.push(decoder.decode(text_bytes.slice(last_offset,facet.index.byteStart)));
-            let closeLink=false;
-            for (const f of facet.features){
-                if (f.uri){
-                    textchunks.push(`<a href='${f.uri}'>`);
-                    closeLink = true;
-                    break;
+            nun_env.addFilter('last_path', function(str) {
+                return str.split('/').pop();
+            });
+
+            nun_env.addFilter('linkify_text', function(r) {
+                const encoder = new TextEncoder();
+                let decoder = new TextDecoder();
+                const text_bytes = encoder.encode(r.text);
+                const textchunks = [];
+                let last_offset=0;
+                if (r.facets){
+                    for (const facet of r.facets){
+                        textchunks.push(decoder.decode(text_bytes.slice(last_offset,facet.index.byteStart)));
+                        let closeLink=false;
+                        for (const f of facet.features){
+                            if (f.uri){
+                                textchunks.push(`<a href='${f.uri}'>`);
+                                closeLink = true;
+                                break;
+                            }
+                        }
+                        textchunks.push(decoder.decode(text_bytes.slice(facet.index.byteStart,facet.index.byteEnd)));
+                        last_offset=facet.index.byteEnd;
+                        if (closeLink){
+                            textchunks.push("</a>");
+                        }
+                    }
                 }
-            }
-            textchunks.push(decoder.decode(text_bytes.slice(facet.index.byteStart,facet.index.byteEnd)));
-            last_offset=facet.index.byteEnd;
-            if (closeLink){
-                textchunks.push("</a>");
-            }
+                textchunks.push(decoder.decode(text_bytes.slice(last_offset)));
+                return textchunks.join('');
+            });
         }
     }
-    textchunks.push(decoder.decode(text_bytes.slice(last_offset)));
-    return textchunks.join('');
 });
 let token = "";
 let auth_token_expires = new Date().getTime();
 let refresh = "";
 
 function getAuthToken () {
-    log("getAuthToken called ");
+    app.log.info("getAuthToken called ");
     return fetch("https://bsky.social/xrpc/com.atproto.server.createSession", {
         method: "POST",
         headers: {
@@ -84,13 +79,13 @@ function getAuthToken () {
         })
     })
     .then (response => {
-        log("getAuthToken status:'"+response.status+"' statusText:'"+response.statusText+"';")
+        app.log.info("getAuthToken status:'"+response.status+"' statusText:'"+response.statusText+"';")
         return response.json().then((data) => {
-            //log(data);
+            //app.log.info(data);
             if (response.status==200) {
                 token = data.accessJwt;
                 refresh = data.refreshJwt;
-                log("getAuthToken response: token='"+token+"'; refresh='"+refresh+"';")
+                app.log.info("getAuthToken response: token='"+token+"'; refresh='"+refresh+"';")
                 auth_token_expires = new Date().getTime() + 1000 *5 * 60 * 30;
             } else {
                 auth_token_expires = new Date().getTime();
@@ -99,16 +94,16 @@ function getAuthToken () {
     })
     .catch(err =>{
         //catch err 
-        console.log(err);
+        app.log.error(err);
     });                       
 }
 
 function refreshAuthToken () {
     if (refresh==="") {
-        log("refreshAuthToken called without refresh token;");
+        app.log.info("refreshAuthToken called without refresh token;");
         return getAuthToken();
     }
-    log("refreshAuthToken called with: token='"+token+"'; refresh='"+refresh+"';");
+    app.log.info("refreshAuthToken called with: token='"+token+"'; refresh='"+refresh+"';");
     return fetch("https://bsky.social/xrpc/com.atproto.server.refreshSession", {
         method: "POST",
         headers: {
@@ -117,14 +112,14 @@ function refreshAuthToken () {
         }
     })
     .then (response => {
-        log("refreshAuthToken status:'"+response.status+"' statusText:'"+response.statusText+"';")
+        app.log.info("refreshAuthToken status:'"+response.status+"' statusText:'"+response.statusText+"';")
         return response.json().then((data) => {
             //log(data);
             if (response.status==200) {
                 token = data.accessJwt;
                 refresh = data.refreshJwt;
                 auth_token_expires = new Date().getTime() + 1000 *5 * 60 * 30;
-                log("refreshAuthToken response: token='"+token+"'; refresh='"+refresh+"';")
+                app.log.info("refreshAuthToken response: token='"+token+"'; refresh='"+refresh+"';")
             } else {
                 return getAuthToken();
             }
@@ -132,7 +127,7 @@ function refreshAuthToken () {
     })
     .catch(err =>{
         //catch err 
-        console.log(err);
+        app.log.error(err);
     });                       
 }
 
@@ -184,7 +179,7 @@ const options = {
 
 const cache = new LRUCache(options);
 
-app.route("/").get(async (req, res) => {
+app.get("/", async (req, res) => {
     if (new Date().getTime() > auth_token_expires) {
         await refreshAuthToken();
     }
@@ -194,26 +189,23 @@ app.route("/").get(async (req, res) => {
 
     if (!url) {
         // show home
-        res.render("home.njk");
-        return;
+        return res.view("home.njk");
     }
 
     try {
         parsed_url = new URL(url);
     } catch (e) {
-        res.render("error.njk", {
+        return res.view("error.njk", {
             error: "Invalid URL: '"+url+"'"
         });
-        return;
     }
 
     const domain = parsed_url.hostname;
 
     if (!VALID_URLS.includes(domain)) {
-        res.render("error.njk", {
+        return res.view("error.njk", {
             error: "Not a known Bluesky host '"+domain+"'"
         });
-        return;
     }
 
     const show_thread = (req.query.show_thread == "on") || (req.query.show_thread == "t"); //support legacy value of 't' for existing URLs
@@ -223,10 +215,9 @@ app.route("/").get(async (req, res) => {
     const post_id = parsed_url.pathname.split("/")[4];
 
     if (!handle || !post_id) {
-        res.render("error.njk", {
+        return res.view("error.njk", {
             error: "Empty handle '"+handle+"' or post '"+post_id+"'"
         });
-        return;
     }
     let query_parts = [];
     if (show_thread){
@@ -239,72 +230,65 @@ app.route("/").get(async (req, res) => {
     const query_string = "?" + query_parts.join("&");
     if (cache.has(query_string)) {
         const data = cache.get(query_string);
-        res.render("post.njk", data);
-        return;
+        return res.view("post.njk", data);
     }
-    // log("resolveHandle fetch: token='"+token+"'; refresh='"+refresh+"';");
-    return fetch("https://bsky.social/xrpc/com.atproto.identity.resolveHandle?handle=" + handle, {
+    // app.log.info("resolveHandle fetch: token='"+token+"'; refresh='"+refresh+"';");
+    const resolveHandle = await fetch("https://bsky.social/xrpc/com.atproto.identity.resolveHandle?handle=" + handle, {
         method: "GET",
         headers: {
             "Content-Type": "application/json",
             "Authorization": "Bearer " + token
         }
-    }).then((response) => {
-        log("resolveHandle fetch: status='"+response.status+"'; statusText='"+response.statusText+"';");
-        response.json().then((did) => {
-            // log("getPostThread fetch: token='"+token+"'; refresh='"+refresh+"';");
-            fetch(`https://bsky.social/xrpc/app.bsky.feed.getPostThread?uri=at://${did.did}/app.bsky.feed.post/${post_id}`, {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": "Bearer " + token
-                },
-            }).then((response) => {
-                log("getPostThread fetch: status='"+response.status+"'; statusText='"+response.statusText+"';");
-                if (response.status !=200){
-                    auth_token_expires = new Date().getTime();
-                    res.render("error.njk", {
-                        error: "Connection problem, try reloading"
-                    });
-                    return;
-                }
-
-                response.json().then((data) => {
-
-                    if (data && data.thread && data.thread.post) {
-                        // eschew preprocessing
-                    } else {
-                        res.render("error.njk", {
-                            error: "No thread or post"
-                        });
-                        return;
-                    }
-
-                    const author_handle = data.thread.post?.author?.handle;
-
-                    const flat_replies = flattenReplies(data.thread.replies, author_handle);
-
-                    const response_data = {
-                        thread: data.thread,
-                        url: "https://"+domain+"/" + query_string,
-                        post_url: url,
-                        show_thread: show_thread,
-                        hide_parent: hide_parent,
-                        flat_replies: flat_replies,
-                    };
-
-                    cache.set(query_string, response_data);
-
-                    res.render("post.njk", response_data);
-                });
-            });
-        });
-    }).catch(err =>{
-        console.log(err);
-        res.send("Err<pre>"+JSON.stringify(err,null,'')+"</pre>")
     });
+    app.log.info("resolveHandle fetch: status='"+resolveHandle.status+"'; statusText='"+resolveHandle.statusText+"';");
+    if (resolveHandle.status !=200){
+        auth_token_expires = new Date().getTime();
+        return res.view("error.njk", {
+            error: "Connection problem, try reloading"
+        });
+    }
+    const { did } = await resolveHandle.json();
+    const getPostThread = await fetch(`https://bsky.social/xrpc/app.bsky.feed.getPostThread?uri=at://${did}/app.bsky.feed.post/${post_id}`, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + token
+        },
+    });
+    app.log.info("getPostThread fetch: status='"+getPostThread.status+"'; statusText='"+getPostThread.statusText+"';");
+    if (getPostThread.status !=200){
+        auth_token_expires = new Date().getTime();
+        return res.view("error.njk", {
+            error: "Connection problem, try reloading"
+        });
+    }
+    const data = await getPostThread.json();
+    if (data && data.thread && data.thread.post) {
+        // eschew preprocessing
+    } else {
+        return res.view("error.njk", {
+            error: "No thread or post"
+        });
+    }
+
+    const author_handle = data.thread.post?.author?.handle;
+
+    const flat_replies = flattenReplies(data.thread.replies, author_handle);
+
+    const response_data = {
+        thread: data.thread,
+        url: "https://"+domain+"/" + query_string,
+        post_url: url,
+        show_thread: show_thread,
+        hide_parent: hide_parent,
+        flat_replies: flat_replies,
+    };
+
+    cache.set(query_string, response_data);
+
+    return res.view("post.njk", response_data);
 });
-app.route("/feed").get(async (req, res) => {
+app.get("/feed", async (req, res) => {
     if (new Date().getTime() > auth_token_expires) {
         await refreshAuthToken();
     }
@@ -312,38 +296,30 @@ app.route("/feed").get(async (req, res) => {
     const user = req.query.user?req.query.user.toLowerCase():'';
 
     if (!user) {
-        res.redirect('/#emcode');
-        return;
+        return res.redirect('/#emcode');
     }
-    // log("getAuthorFeed fetch: token='"+token+"'; refresh='"+refresh+"';");
-    return fetch("https://bsky.social/xrpc/app.bsky.feed.getAuthorFeed?actor=" + user, {
+    // app.log.info("getAuthorFeed fetch: token='"+token+"'; refresh='"+refresh+"';");
+    const response = await fetch("https://bsky.social/xrpc/app.bsky.feed.getAuthorFeed?actor=" + user, {
         method: "GET",
         headers: {
             "Content-Type": "application/json",
             "Authorization": "Bearer " + token
         }
-    }).then((response) => {
-        log("getAuthorFeed fetch: status='"+response.status+"'; statusText='"+response.statusText+"';");
-        if (response.status !=200){
-            auth_token_expires = new Date().getTime();
-            res.render("error.njk", {
-                error: "Connection problem, try reloading"
-            });
-            return;
-        }
-        response.json().then((data) => {
-
-            res.render("feed.njk", {
-                author: user,
-                posts: data.feed,
-            });
+    });
+    app.log.info("getAuthorFeed fetch: status='"+response.status+"'; statusText='"+response.statusText+"';");
+    if (response.status !=200){
+        auth_token_expires = new Date().getTime();
+        return res.view("error.njk", {
+            error: "Connection problem, try reloading"
         });
-    }).catch(err =>{
-        console.log(err);
-        res.send("Err<pre>"+JSON.stringify(err,null,'')+"</pre>")
+    }
+    const { feed } = await response.json();
+    return res.view("feed.njk", {
+        author: user,
+        posts: feed,
     });
 });
-app.route("/getfeed").get(async (req, res) => {
+app.get("/getfeed", async (req, res) => {
     if (new Date().getTime() > auth_token_expires) {
         await refreshAuthToken();
     }
@@ -351,8 +327,7 @@ app.route("/getfeed").get(async (req, res) => {
     var handle = req.query.handle;
 
     if (!handle) {
-        res.status(400).send("No handle provided");
-        return;
+        return res.status(400).send("No handle provided");
     }
 
     if (handle.startsWith("https://staging.bsky.app/profile/")) {
@@ -364,33 +339,27 @@ app.route("/getfeed").get(async (req, res) => {
     handle = handle.replace("/", "");
 
     if (handle.startsWith("did:")) {
-        return fetch("https://bsky.social/xrpc/app.bsky.actor.getProfile?actor=" + handle, {
+        const response = await fetch("https://bsky.social/xrpc/app.bsky.actor.getProfile?actor=" + handle, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
                 "Authorization": "Bearer " + token
             }
-        }).then((response) => {
-            response.json().then((did) => {
-                res.json({
-                    "handle": did.handle
-                });
-            });
-        }).catch(err =>{
-            console.log(err);
-            res.send("Err<pre>"+JSON.stringify(err,null,'')+"</pre>")
+        });
+        ({ handle } = await response.json());
+        return res.send({
+            handle
         });
     } else {
-        res.json({
-            "handle": handle
+        return res.send({
+            handle
         });
     }
 });
 // run in production mode
-app.listen(PORT, () => {
-    console.log("Server started on port " + PORT);
-});
-
-process.on('uncaughtException', async (err) => {
-    console.log(err);
+app.listen({ port: PORT }, (err) => {
+    if (err) {
+        app.log.error(err)
+        process.exit(1)
+    }
 });
