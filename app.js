@@ -29,16 +29,16 @@ app.use((err, req, res, next) => {
         error: "There was an error loading this page."
     });
 });
-const nun_env = nunjucks.configure('views', { 
-    autoescape: true, 
-    'express': app 
+const nun_env = nunjucks.configure('views', {
+    autoescape: true,
+    'express': app
 });
 nun_env.addGlobal('domain', domain);
 nun_env.addFilter('date', dateFilter);
 
 nun_env.addFilter('last_path', function(str) {
     return str.split('/').pop();
-}); 
+});
 
 nun_env.addFilter('linkify_text', function(r) {
     const encoder = new TextEncoder();
@@ -84,13 +84,13 @@ function getAuthToken () {
         })
     })
     .then (response => {
-        log("getAuthToken status:'"+response.status+"' statusText:'"+response.statusText+"';")
+        log(`getAuthToken status:'${response.status}' statusText:'${response.statusText}';`)
         return response.json().then((data) => {
             //log(data);
             if (response.status==200) {
                 token = data.accessJwt;
                 refresh = data.refreshJwt;
-                log("getAuthToken response: token='"+token+"'; refresh='"+refresh+"';")
+                log(`getAuthToken response: token='${token}'; refresh='${refresh}';`)
                 auth_token_expires = new Date().getTime() + 1000 *5 * 60 * 30;
             } else {
                 auth_token_expires = new Date().getTime();
@@ -98,9 +98,9 @@ function getAuthToken () {
         })
     })
     .catch(err =>{
-        //catch err 
+        //catch err
         console.log(err);
-    });                       
+    });
 }
 
 function refreshAuthToken () {
@@ -113,27 +113,27 @@ function refreshAuthToken () {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
-            "Authorization": "Bearer " + refresh
+            "Authorization": `Bearer ${refresh}`
         }
     })
     .then (response => {
-        log("refreshAuthToken status:'"+response.status+"' statusText:'"+response.statusText+"';")
+        log(`refreshAuthToken status:'${response.status}' statusText:'${response.statusText}';`)
         return response.json().then((data) => {
             //log(data);
             if (response.status==200) {
                 token = data.accessJwt;
                 refresh = data.refreshJwt;
                 auth_token_expires = new Date().getTime() + 1000 *5 * 60 * 30;
-                log("refreshAuthToken response: token='"+token+"'; refresh='"+refresh+"';")
+                log(`refreshAuthToken response: token='${token}'; refresh='${refresh}';`)
             } else {
                 return getAuthToken();
             }
         })
     })
     .catch(err =>{
-        //catch err 
+        //catch err
         console.log(err);
-    });                       
+    });
 }
 
 function flattenReplies (replies, author_handle, iteration = 0) {
@@ -202,7 +202,7 @@ app.route("/").get(async (req, res) => {
         parsed_url = new URL(url);
     } catch (e) {
         res.render("error.njk", {
-            error: "Invalid URL: '"+url+"'"
+            error: `Invalid URL: '${url}'`
         });
         return;
     }
@@ -211,7 +211,7 @@ app.route("/").get(async (req, res) => {
 
     if (!VALID_URLS.includes(domain)) {
         res.render("error.njk", {
-            error: "Not a known Bluesky host '"+domain+"'"
+            error: `Not a known Bluesky host '${domain}'`
         });
         return;
     }
@@ -224,7 +224,7 @@ app.route("/").get(async (req, res) => {
 
     if (!handle || !post_id) {
         res.render("error.njk", {
-            error: "Empty handle '"+handle+"' or post '"+post_id+"'"
+            error: `Empty handle '${handle}' or post '${post_id}'`
         });
         return;
     }
@@ -235,7 +235,7 @@ app.route("/").get(async (req, res) => {
     if (hide_parent){
         query_parts.push("hide_parent=on");
     }
-    query_parts.push("url="+url);
+    query_parts.push(`url=${url}`);
     const query_string = "?" + query_parts.join("&");
     if (cache.has(query_string)) {
         const data = cache.get(query_string);
@@ -304,6 +304,7 @@ app.route("/").get(async (req, res) => {
         res.send("Err<pre>"+JSON.stringify(err,null,'')+"</pre>")
     });
 });
+
 app.route("/feed").get(async (req, res) => {
     if (new Date().getTime() > auth_token_expires) {
         await refreshAuthToken();
@@ -343,6 +344,7 @@ app.route("/feed").get(async (req, res) => {
         res.send("Err<pre>"+JSON.stringify(err,null,'')+"</pre>")
     });
 });
+
 app.route("/getfeed").get(async (req, res) => {
     if (new Date().getTime() > auth_token_expires) {
         await refreshAuthToken();
@@ -386,6 +388,17 @@ app.route("/getfeed").get(async (req, res) => {
         });
     }
 });
+
+app.route("/profile/:userHandle/").get(async (req, res) => {
+    log(req.params);
+    res.redirect(`/feed?user=${req.params.userHandle}`)
+});
+
+app.route("/profile/:userHandle/post/:postId").get(async (req, res) => {
+    log(req.params);
+    res.redirect(`/?url=https://bsky.app/profile/${req.params.userHandle}/post/${req.params.postId}`)
+});
+
 // run in production mode
 app.listen(PORT, () => {
     console.log("Server started on port " + PORT);
