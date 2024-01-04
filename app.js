@@ -305,45 +305,45 @@ app.route("/").get(async (req, res) => {
     });
 });
 
-app.route("/feed").get(async (req, res) => {
-    if (new Date().getTime() > auth_token_expires) {
-        await refreshAuthToken();
-    }
+// app.route("/feed").get(async (req, res) => {
+//     if (new Date().getTime() > auth_token_expires) {
+//         await refreshAuthToken();
+//     }
 
-    const user = req.query.user?req.query.user.toLowerCase():'';
+//     const user = req.query.user?req.query.user.toLowerCase():'';
 
-    if (!user) {
-        res.redirect('/#emcode');
-        return;
-    }
-    // log("getAuthorFeed fetch: token='"+token+"'; refresh='"+refresh+"';");
-    return fetch("https://bsky.social/xrpc/app.bsky.feed.getAuthorFeed?actor=" + user, {
-        method: "GET",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer " + token
-        }
-    }).then((response) => {
-        log("getAuthorFeed fetch: status='"+response.status+"'; statusText='"+response.statusText+"';");
-        if (response.status !=200){
-            auth_token_expires = new Date().getTime();
-            res.render("error.njk", {
-                error: "Connection problem, try reloading"
-            });
-            return;
-        }
-        response.json().then((data) => {
+//     if (!user) {
+//         res.redirect('/#emcode');
+//         return;
+//     }
+//     // log("getAuthorFeed fetch: token='"+token+"'; refresh='"+refresh+"';");
+//     return fetch("https://bsky.social/xrpc/app.bsky.feed.getAuthorFeed?actor=" + user, {
+//         method: "GET",
+//         headers: {
+//             "Content-Type": "application/json",
+//             "Authorization": "Bearer " + token
+//         }
+//     }).then((response) => {
+//         log("getAuthorFeed fetch: status='"+response.status+"'; statusText='"+response.statusText+"';");
+//         if (response.status !=200){
+//             auth_token_expires = new Date().getTime();
+//             res.render("error.njk", {
+//                 error: "Connection problem, try reloading"
+//             });
+//             return;
+//         }
+//         response.json().then((data) => {
 
-            res.render("feed.njk", {
-                author: user,
-                posts: data.feed,
-            });
-        });
-    }).catch(err =>{
-        console.log(err);
-        res.send("Err<pre>"+JSON.stringify(err,null,'')+"</pre>")
-    });
-});
+//             res.render("feed.njk", {
+//                 author: user,
+//                 posts: data.feed,
+//             });
+//         });
+//     }).catch(err =>{
+//         console.log(err);
+//         res.send("Err<pre>"+JSON.stringify(err,null,'')+"</pre>")
+//     });
+// });
 
 app.route("/getfeed").get(async (req, res) => {
     if (new Date().getTime() > auth_token_expires) {
@@ -389,10 +389,10 @@ app.route("/getfeed").get(async (req, res) => {
     }
 });
 
-app.route("/profile/:userHandle/").get(async (req, res) => {
-    log(req.params);
-    res.redirect(`/feed?user=${req.params.userHandle}`)
-});
+// app.route("/profile/:userHandle/").get(async (req, res) => {
+//     log(req.params);
+//     res.redirect(`/feed?user=${req.params.userHandle}`)
+// });
 
 app.route("/profile/:userHandle/post/:postId").get(async (req, res) => {
     log(req.params);
