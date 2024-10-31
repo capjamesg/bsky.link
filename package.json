@@ -18,7 +18,7 @@
   },
   "homepage": "https://github.com/capjamesg/bsky-link-preview#readme",
   "dependencies": {
-    "express": "^4.21.0",
+    "express": "^4.21.1",
     "express-async-errors": "^3.1.1",
     "lru-cache": "^9.1.1",
     "microformats-parser": "^1.4.1",
