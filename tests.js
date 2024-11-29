@@ -1,4 +1,3 @@
-const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 const { mf2 } = require("microformats-parser");
 
 const ROOT_URL = "http://localhost:3008/?url=";
@@ -10,19 +9,26 @@ var urls = [
     "https://bsky.app/profile/tudorgirba.com/post/3jutyyruobi22"
 ];
 
-for (var i = 0; i < urls.length; i++) {
-    var url = ROOT_URL + urls[i];
-    fetch(url, {
+Promise.allSettled(urls.map(function (url) {
+    var url = ROOT_URL + url;
+    return fetch(url, {
         method: "GET",
     }).then((response) => {
         var url = response.url;
-        response.text().then((data) => {
+        return response.text().then((data) => {
             var mf2Data = mf2(data, {baseUrl: url});
             if (mf2Data.items.length == 0) {
                 throw Error("No mf2 data found for " + url);
             }
+            return mf2Data;
         });
     });
-}
-
-console.log("All tests passed!");
+})).then(function (testResults) {
+    if (testResults.every(function (promise) {
+        return promise.status === "fulfilled";
+    })) {
+        console.log("All tests passed!");
+    } else {
+        console.log("Some tests failed.");
+    }
+});
